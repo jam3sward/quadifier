@@ -1,0 +1,13 @@
+Why have one method for creating a swap chain when you could have six:
+
+D3D11CreateDeviceAndSwapChain
+IDXGIFactory::CreateSwapChain
+IDXGIFactory1::CreateSwapChain
+IDXGIFactory2::CreateSwapChainForHwnd
+IDXGIFactory2::CreateSwapChainForCoreWindow
+IDXGIFactory2::CreateSwapChainForComposition
+
+There are also two Present functions:
+
+IDXGISwapChain::Present
+IDXGISwapChain1::Present1

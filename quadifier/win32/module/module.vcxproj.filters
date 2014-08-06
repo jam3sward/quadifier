@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="source\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\extern\mhook-2.3\mhook-lib\mhook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Quadifier.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\extern\mhook-2.3\disasm-lib\cpu.c">
+      <Filter>Source Files\Disassembler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\extern\mhook-2.3\disasm-lib\disasm.c">
+      <Filter>Source Files\Disassembler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\extern\mhook-2.3\disasm-lib\disasm_x86.c">
+      <Filter>Source Files\Disassembler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\extern\mhook-2.3\disasm-lib\misc.c">
+      <Filter>Source Files\Disassembler</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ID3D11DeviceContextProxy.cpp">
+      <Filter>Source Files\D3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ID3D11DeviceProxy.cpp">
+      <Filter>Source Files\D3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DXGISwapChainProxy.cpp">
+      <Filter>Source Files\D3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DXGIFactoryProxy.cpp">
+      <Filter>Source Files\D3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DXGIFactory1Proxy.cpp">
+      <Filter>Source Files\D3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DXGIDeviceProxy.cpp">
+      <Filter>Source Files\D3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DXGIAdapterProxy.cpp">
+      <Filter>Source Files\D3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="source\IDirect3D9Proxy.cpp">
+      <Filter>Source Files\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="source\IDirect3DDevice9Proxy.cpp">
+      <Filter>Source Files\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Extensions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\CriticalSection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\Event.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\DebugUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\GLWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\Log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\StereoUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\WinMessage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\extern\mhook-2.3\mhook-lib\mhook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Quadifier.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\extern\mhook-2.3\disasm-lib\cpu.h">
+      <Filter>Header Files\Disassembler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\extern\mhook-2.3\disasm-lib\disasm.h">
+      <Filter>Header Files\Disassembler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\extern\mhook-2.3\disasm-lib\disasm_x86.h">
+      <Filter>Header Files\Disassembler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\extern\mhook-2.3\disasm-lib\disasm_x86_tables.h">
+      <Filter>Header Files\Disassembler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\extern\mhook-2.3\disasm-lib\misc.h">
+      <Filter>Header Files\Disassembler</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ID3D11DeviceContextProxy.h">
+      <Filter>Header Files\D3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ID3D11DeviceProxy.h">
+      <Filter>Header Files\D3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DXGIAdapterProxy.h">
+      <Filter>Header Files\D3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DXGIDeviceProxy.h">
+      <Filter>Header Files\D3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DXGIFactory1Proxy.h">
+      <Filter>Header Files\D3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DXGIFactoryProxy.h">
+      <Filter>Header Files\D3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DXGISwapChainProxy.h">
+      <Filter>Header Files\D3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="source\IDirect3D9Proxy.h">
+      <Filter>Header Files\D3D9</Filter>
+    </ClInclude>
+    <ClInclude Include="source\IDirect3DDevice9Proxy.h">
+      <Filter>Header Files\D3D9</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Extensions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\CriticalSection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\Event.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\DebugUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\GLWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\StereoUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\WinMessage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="notes.txt" />
+    <None Include="..\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{73ff552f-15e1-4800-be08-e86ff189420d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{62f74f3e-9ada-463b-8edd-301334737bde}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Disassembler">
+      <UniqueIdentifier>{a799b8c5-acda-4e17-aee5-e0a91c9fc1b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Disassembler">
+      <UniqueIdentifier>{116b5618-ebaa-4cce-80b0-9d92515b0219}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\D3D11">
+      <UniqueIdentifier>{79c968a9-d470-4406-8db1-785c7f25a878}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\D3D9">
+      <UniqueIdentifier>{4dd73d05-aa7b-43f1-9a90-6b529d9855eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\D3D11">
+      <UniqueIdentifier>{dda7f3c1-5a54-4ee2-a7ba-06f2733c23e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\D3D9">
+      <UniqueIdentifier>{f91f2316-54e3-4e69-b54c-80ee5178e45d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

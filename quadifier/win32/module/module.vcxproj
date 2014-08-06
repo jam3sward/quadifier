@@ -1,0 +1,157 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7A329222-72D1-46F9-92BF-A709EC498909}</ProjectGuid>
+    <RootNamespace>module</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\extern\mhook-2.3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;d3d11.lib;opengl32.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\extern\mhook-2.3;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;d3d11.lib;opengl32.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\common\CriticalSection.cpp" />
+    <ClCompile Include="..\..\common\Event.cpp" />
+    <ClCompile Include="..\common\DebugUtil.cpp" />
+    <ClCompile Include="..\common\GLWindow.cpp" />
+    <ClCompile Include="..\common\Log.cpp" />
+    <ClCompile Include="..\common\StereoUtil.cpp" />
+    <ClCompile Include="..\common\WinMessage.cpp" />
+    <ClCompile Include="source\DXGIAdapterProxy.cpp" />
+    <ClCompile Include="source\DXGIDeviceProxy.cpp" />
+    <ClCompile Include="source\DXGIFactory1Proxy.cpp" />
+    <ClCompile Include="source\DXGIFactoryProxy.cpp" />
+    <ClCompile Include="source\DXGISwapChainProxy.cpp" />
+    <ClCompile Include="source\Extensions.cpp" />
+    <ClCompile Include="source\ID3D11DeviceContextProxy.cpp" />
+    <ClCompile Include="source\ID3D11DeviceProxy.cpp" />
+    <ClCompile Include="source\IDirect3D9Proxy.cpp" />
+    <ClCompile Include="source\IDirect3DDevice9Proxy.cpp" />
+    <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\Quadifier.cpp" />
+    <ClCompile Include="..\extern\mhook-2.3\disasm-lib\cpu.c" />
+    <ClCompile Include="..\extern\mhook-2.3\disasm-lib\disasm.c" />
+    <ClCompile Include="..\extern\mhook-2.3\disasm-lib\disasm_x86.c" />
+    <ClCompile Include="..\extern\mhook-2.3\mhook-lib\mhook.cpp" />
+    <ClCompile Include="..\extern\mhook-2.3\disasm-lib\misc.c" />
+    <ClCompile Include="source\Settings.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\common\CriticalSection.h" />
+    <ClInclude Include="..\..\common\Event.h" />
+    <ClInclude Include="..\common\DebugUtil.h" />
+    <ClInclude Include="..\common\GLWindow.h" />
+    <ClInclude Include="..\common\Log.h" />
+    <ClInclude Include="..\common\StereoUtil.h" />
+    <ClInclude Include="..\common\WinMessage.h" />
+    <ClInclude Include="source\DXGIAdapterProxy.h" />
+    <ClInclude Include="source\DXGIDeviceProxy.h" />
+    <ClInclude Include="source\DXGIFactory1Proxy.h" />
+    <ClInclude Include="source\DXGIFactoryProxy.h" />
+    <ClInclude Include="source\DXGISwapChainProxy.h" />
+    <ClInclude Include="source\Extensions.h" />
+    <ClInclude Include="source\ID3D11DeviceContextProxy.h" />
+    <ClInclude Include="source\ID3D11DeviceProxy.h" />
+    <ClInclude Include="source\IDirect3D9Proxy.h" />
+    <ClInclude Include="source\IDirect3DDevice9Proxy.h" />
+    <ClInclude Include="source\Quadifier.h" />
+    <ClInclude Include="..\extern\mhook-2.3\disasm-lib\cpu.h" />
+    <ClInclude Include="..\extern\mhook-2.3\disasm-lib\disasm.h" />
+    <ClInclude Include="..\extern\mhook-2.3\disasm-lib\disasm_x86.h" />
+    <ClInclude Include="..\extern\mhook-2.3\disasm-lib\disasm_x86_tables.h" />
+    <ClInclude Include="..\extern\mhook-2.3\mhook-lib\mhook.h" />
+    <ClInclude Include="..\extern\mhook-2.3\disasm-lib\misc.h" />
+    <ClInclude Include="source\Settings.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\readme.txt" />
+    <None Include="notes.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

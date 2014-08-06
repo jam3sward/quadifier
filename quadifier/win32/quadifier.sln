@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "launcher", "quadifier.vcxproj", "{B56C43FF-E40B-41B1-85B9-FF3B4569F5DF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "module", "module\module.vcxproj", "{7A329222-72D1-46F9-92BF-A709EC498909}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B56C43FF-E40B-41B1-85B9-FF3B4569F5DF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B56C43FF-E40B-41B1-85B9-FF3B4569F5DF}.Debug|Win32.Build.0 = Debug|Win32
+		{B56C43FF-E40B-41B1-85B9-FF3B4569F5DF}.Release|Win32.ActiveCfg = Release|Win32
+		{B56C43FF-E40B-41B1-85B9-FF3B4569F5DF}.Release|Win32.Build.0 = Release|Win32
+		{7A329222-72D1-46F9-92BF-A709EC498909}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7A329222-72D1-46F9-92BF-A709EC498909}.Debug|Win32.Build.0 = Debug|Win32
+		{7A329222-72D1-46F9-92BF-A709EC498909}.Release|Win32.ActiveCfg = Release|Win32
+		{7A329222-72D1-46F9-92BF-A709EC498909}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
