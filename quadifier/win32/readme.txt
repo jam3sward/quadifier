@@ -34,6 +34,10 @@ begun and ended for a particular frame, so that we can capture the results.
 The left and right images are rendered sequentially in Direct3D, and are
 captured and moved into the appropriate left/right buffers by Quadifier.
 
+Scripts are used in Unity to render the left and right images, and to
+create the appropriate asymmetric camera frustum needed for correct
+stereo projection.
+
 Most of the work is carried out by the Quadifier class. It causes Direct3D
 to render into a render target instead of the screen. The corresponding
 surface is mapped onto an OpenGL texture or renderbuffer using the NVIDIA
@@ -74,9 +78,6 @@ Current status
 --------------
 This currently (R359) works on Windows 7 and Windows XP, having been tested
 on about 5 different PCs to date. The following issues have been noticed:
-
-* Fullscreen unlikely to work (black window) - theory: may be impossible to
-create GL window as a child of fullscreen D3D window?
 
 * Only works on the CUBE if the mosaic is the primary monitor, and the
 window must be wholly on the CUBE (otherwise stereo does not display)
