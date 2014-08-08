@@ -118,6 +118,9 @@ public:
 
 private:
 
+    /// Return the wall clock time in seconds
+    double getTime() const;
+
     /**
      * Send the last rendered frame from DX to GL and swap the render
      * targets ready for next frame.
@@ -193,6 +196,9 @@ private:
     unsigned m_clearCountPersist;   ///< Persistent number of clears
 
     unsigned m_channelRenderCount;  ///< number of channels rendered
+
+    double   m_firstFrameTimeGL;    ///< time-stamp of first GL frame
+    double   m_lastFrameTimeGL;     ///< time-stamp of last GL frame
 
     uintptr_t m_thread;             ///< Handle of the rendering thread
 

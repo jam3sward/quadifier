@@ -1,4 +1,6 @@
 #include <process.h>
+#include <time.h>
+#include <iomanip>
 #include "Quadifier.h"
 #include "Log.h"
 #include "Settings.h"
@@ -62,6 +64,8 @@ Quadifier::Quadifier(
     m_clearCount = 0;
     m_clearCountPersist = 0;
     m_channelRenderCount = 0;
+    m_firstFrameTimeGL = 0.0;
+    m_lastFrameTimeGL = 0.0;
     m_thread = 0;
     m_sourceWindow = 0;
     m_interopGLDX = 0;
@@ -149,12 +153,6 @@ void Quadifier::onPostClearDX()
 
     // count number of clears per frame
     ++m_clearCount;
-
-    // wait until the frame has been rendered out, to keep the OpenGL and
-    // Direct3D threads loosely synchronised
-    // (after 1/60th of a second we timeout and return in any case)
-    //static const unsigned timeout =  static_cast<unsigned>(1000.0/60.0 + 0.5);
-    //m_frameDone.wait( timeout );
 }
 
 //-----------------------------------------------------------------------------
@@ -206,6 +204,11 @@ void Quadifier::onPostPresentDX()
     // reset clear counter
     m_clearCountPersist = m_clearCount;
     m_clearCount = 0;
+
+    // wait until the frame has been rendered out, to keep the OpenGL and
+    // Direct3D threads synchronised (after a timeout we return anyway)
+    static const unsigned timeout =  static_cast<unsigned>(1000.0/60.0 + 0.5);
+    m_frameDone.wait( timeout );
 }//postPresent
 
 //-----------------------------------------------------------------------------
@@ -392,6 +395,21 @@ void Quadifier::onDestroy()
     Log::print("GL frames = ") << m_framesGL << endl;
     Log::print("GL fields = ") << m_fieldsGL << endl;
     Log::print("DX frames = ") << m_framesDX << endl;
+
+    // display a metric which indicates the ratio of DX to GL frames
+    // (in stereo mode this should tend towards 200)
+    if ( m_framesGL > 0 )
+        Log::print("DX/GL metric = ")
+            << 100 * m_framesDX / m_framesGL
+            << endl;
+
+    // display the final frame rate (number of GL frames per second)
+    double elapsed = m_lastFrameTimeGL - m_firstFrameTimeGL;
+    if ( elapsed > 0.01 )
+        Log::print("Frame rate = ")
+            << setprecision(2) << fixed
+            << static_cast<double>(m_framesGL-1) / elapsed << " fps"
+            << endl;
 }//onDestroy
 
 //-----------------------------------------------------------------------------
@@ -469,7 +487,16 @@ void Quadifier::onPaint()
         m_window.swapBuffers();
         m_channelRenderCount = 0;
 
+        // signal that we've processed one complete frame
+        m_frameDone.signal();
+
         if (m_verbose) Log::print( "GLSWAP\n" );
+
+        // record time-stamp of first/last frame
+        if ( m_framesGL == 0 )
+            m_firstFrameTimeGL = getTime();
+        else
+            m_lastFrameTimeGL = getTime();
 
         // count GL frames
         ++m_framesGL;
@@ -477,9 +504,6 @@ void Quadifier::onPaint()
 
     // count GL fields
     ++m_fieldsGL;
-
-    // signal that we've processed one frame
-    m_frameDone.signal();
 }
 
 //-----------------------------------------------------------------------------
@@ -497,7 +521,7 @@ void Quadifier::onResize( UINT type, int w, int h )
 void Quadifier::onIdle()
 {
     // if we have a new frame, force a redraw
-    if ( m_newFrame.wait(5) )
+    if ( m_newFrame.wait(0) )
         redraw();
 }
 
@@ -738,6 +762,12 @@ unsigned __stdcall Quadifier::threadFunc( void *context )
 
     return 0;
 }//ThreadFunc
+
+//-----------------------------------------------------------------------------
+
+double Quadifier::getTime() const {
+    return static_cast<double>( clock() ) / static_cast<double>( CLOCKS_PER_SEC );
+}
 
 //-----------------------------------------------------------------------------
 
