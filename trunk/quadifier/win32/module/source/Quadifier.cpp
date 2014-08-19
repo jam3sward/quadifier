@@ -468,8 +468,8 @@ void Quadifier::onPaint()
         
         // blit from the read framebuffer to the display framebuffer
         glx.glBlitFramebuffer(
-            0, 0, m_width-1, m_height-1,		// source rectangle
-            0, m_height-1, m_width-1, 0,		// destination: flip the image vertically
+            0, 0, m_width, m_height,        // source rectangle
+            0, m_height, m_width, 0,        // destination: flip the image vertically
             GL_COLOR_BUFFER_BIT,
             GL_LINEAR
         );
