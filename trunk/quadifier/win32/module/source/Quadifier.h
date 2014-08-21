@@ -140,7 +140,6 @@ private:
     LPDIRECT3DSURFACE9   m_backBuffer;  ///< The back buffer for rendering
 
     unsigned m_framesGL;    ///< OpenGL frame count
-    unsigned m_fieldsGL;    ///< OpenGL field count
     unsigned m_framesDX;    ///< Direct3D frame count
 
     unsigned m_samplesDX;   ///< Direct3D multisamples (or 0)

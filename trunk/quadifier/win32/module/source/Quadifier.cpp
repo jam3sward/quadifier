@@ -47,7 +47,6 @@ Quadifier::Quadifier(
     m_direct3D( direct3D )
 {
     m_framesGL = 0;
-    m_fieldsGL = 0;
     m_framesDX = 0;
 
     m_samplesDX = 0;
@@ -393,7 +392,6 @@ void Quadifier::onDestroy()
     Log::print( "onDestroy\n" );
 
     Log::print("GL frames = ") << m_framesGL << endl;
-    Log::print("GL fields = ") << m_fieldsGL << endl;
     Log::print("DX frames = ") << m_framesDX << endl;
 
     // display a metric which indicates the ratio of DX to GL frames
@@ -503,9 +501,6 @@ void Quadifier::onPaint()
             ++m_framesGL;
         }
     }
-
-    // count GL fields
-    ++m_fieldsGL;
 }
 
 //-----------------------------------------------------------------------------
