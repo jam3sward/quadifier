@@ -492,14 +492,16 @@ void Quadifier::onPaint()
 
         if (m_verbose) Log::print( "GLSWAP\n" );
 
-        // record time-stamp of first/last frame
-        if ( m_framesGL == 0 )
-            m_firstFrameTimeGL = getTime();
-        else
-            m_lastFrameTimeGL = getTime();
+        if ( m_stereoMode ) {
+            // record time-stamp of first/last frame
+            if ( m_framesGL == 0 )
+                m_firstFrameTimeGL = getTime();
+            else
+                m_lastFrameTimeGL = getTime();
 
-        // count GL frames
-        ++m_framesGL;
+            // count GL frames
+            ++m_framesGL;
+        }
     }
 
     // count GL fields
@@ -795,7 +797,7 @@ void Quadifier::sendFrame()
     m_newFrame.signal();
 
     // count DX frames
-    ++m_framesDX;
+    if ( m_stereoMode ) ++m_framesDX;
 }//sendFrame
 
 //-----------------------------------------------------------------------------
