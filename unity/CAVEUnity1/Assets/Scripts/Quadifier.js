@@ -269,6 +269,14 @@ function trackerDataCallback( data :TrackerData ) {
 
 //-----------------------------------------------------------------------------
 
+// called at wake up
+function Awake () {
+	// render as fast as possible
+	Application.targetFrameRate = -1;
+}
+
+//-----------------------------------------------------------------------------
+
 // called at start up
 function Start () {
 	serialize = GetComponent( Serialize );
@@ -358,6 +366,11 @@ function updateCameras () {
 //-----------------------------------------------------------------------------
 
 function Update () {
+	// ensure vsync is disabled
+	// note: calling this from Start doesn't seem to work (it changes back),
+	// presumably because player quality settings are applied after start up?
+	QualitySettings.vSyncCount = 0;
+
 	// update camera positions
 	updateCameras();
 	
