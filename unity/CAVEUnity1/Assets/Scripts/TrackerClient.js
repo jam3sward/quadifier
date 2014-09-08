@@ -86,7 +86,7 @@ function stop() {
 	
 	// wait until the thread stops
 	if (thread != null) {
-	    thread.Join();
+	    thread.Join(2500);
 	    thread = null;
     }
 }
