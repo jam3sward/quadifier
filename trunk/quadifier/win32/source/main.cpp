@@ -1,5 +1,8 @@
 #include <iostream>
 #include "DLLInject.h"
+#include "GLWindow.h"
+#include <GL/gl.h>
+#include <GL/wglext.h>
 
 using namespace std;
 
@@ -29,8 +32,30 @@ using namespace std;
 //
 //-----------------------------------------------------------------------------
 
+// workaround for issue seen on Windows 7 with NVIDIA 
+void triggerStereo()
+{
+    // attributes for an OpenGL stereo window
+    GLWindow::Attributes attributes;
+    attributes[WGL_STEREO_ARB] = GL_TRUE;
+
+    // create and destroy a small stereo window: this is here to work around
+    // an issue with windows failing to switch to quad-buffer mode (although
+    // the window is successfully created and reports a stereo pixel format)
+    // note: the window is invisible (not shown) but typically causes the
+    // windows desktop to flash briefly (first run only) as stereo activates
+    GLWindow window;
+    window.create( 0, "", 0, 0, 0, 8, 8, 0, 0, DefWindowProc, 0, attributes );
+    window.destroy();
+}
+
+//-----------------------------------------------------------------------------
+
 int main ( int argc, char **argv )
 {
+    // trigger stereo mode in Windows by creating a temporary stereo window
+    triggerStereo();
+
     // the name of our DLL to be injected
     static const string moduleName( "module.dll" );
 
