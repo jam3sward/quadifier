@@ -2,6 +2,7 @@
 #include <GL/GL.h>
 #include <GL/glext.h>
 #include <GL/wglext.h>
+#include <tchar.h>
 
 using namespace std;
 
@@ -71,7 +72,7 @@ bool GLWindow::create(
     destroy();
 
     // window class name
-    static const wchar_t *className = L"GLCLASS";
+    static const _TCHAR *className = _T("GLCLASS");
 
     // define window class
     WNDCLASS wc = {};
@@ -81,7 +82,7 @@ bool GLWindow::create(
     wc.hIcon         = LoadIcon  ( 0, IDI_APPLICATION );
     wc.hCursor       = LoadCursor( 0, IDC_ARROW );
     wc.hbrBackground = 0;
-    wc.lpszMenuName  = L""; 
+    wc.lpszMenuName  = _T(""); 
     wc.lpszClassName = className;
 
     HWND window = 0;
@@ -98,7 +99,7 @@ bool GLWindow::create(
         window = CreateWindowEx(
             0,                      // extended style
             className,              // class name
-            L"",                    // window title
+            _T(""),                 // window title
             WS_OVERLAPPEDWINDOW |   // window style
             WS_CLIPCHILDREN     |
             WS_CLIPSIBLINGS,
