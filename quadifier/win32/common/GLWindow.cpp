@@ -93,7 +93,7 @@ bool GLWindow::create(
 
     do {
         // register window class
-        ATOM windowClass = RegisterClass( &wc );
+        RegisterClass( &wc );
 
         // create a temporary window
         window = CreateWindowEx(
