@@ -10,6 +10,9 @@
     <ClCompile Include="common\NtCreateThreadEx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="common\GLWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -24,6 +27,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="common\NtCreateThreadEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="common\GLWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
