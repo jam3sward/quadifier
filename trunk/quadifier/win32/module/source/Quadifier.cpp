@@ -39,6 +39,11 @@ using namespace std;
 //
 //-----------------------------------------------------------------------------
 
+/// user defined message indicating a new DX frame is available
+static const UINT WM_USER_NEWFRAME = (WM_USER + 1);
+
+//-----------------------------------------------------------------------------
+
 Quadifier::Quadifier(
     IDirect3DDevice9 *device,
     IDirect3D9 *direct3D
@@ -55,14 +60,11 @@ Quadifier::Quadifier(
     m_backBuffer = 0;
     m_drawBuffer = 0;
     m_readBuffer = 0;
-    m_lastBuffer = 0;
-    m_lastChannel = 0;
     // m_target implicit
     m_verbose = false;
     m_stereoMode = false;
     m_clearCount = 0;
     m_clearCountPersist = 0;
-    m_channelRenderCount = 0;
     m_firstFrameTimeGL = 0.0;
     m_lastFrameTimeGL = 0.0;
     m_thread = 0;
@@ -125,7 +127,7 @@ void Quadifier::onPreClearDX(
         (m_clearCountPersist > 0) &&
         (m_clearCount == (m_clearCountPersist/2))
     )
-        sendFrame();
+        sendFrame( GL_BACK_LEFT );
 
     // save the current viewport
     D3DVIEWPORT9 viewport;
@@ -179,10 +181,12 @@ void Quadifier::onPrePresentDX(
     }
 
     // send frame to GL display thread
-    sendFrame();
+    // if there has been more than one clear, this will be the right eye
+    // channel of a stereo pair, otherwise we are rendering 2D
+    sendFrame( (m_clearCount > 1) ? GL_BACK_RIGHT : GL_BACK );
 
-    // this would set the render target to the back buffer again
-    //m_device->SetRenderTarget( 0, m_backBuffer );
+    // signal that a new frame has been rendered
+    SendNotifyMessage( m_window.getHWND(), WM_USER_NEWFRAME, 0, 0 );
 }//onPrePresentDX
 
 //-----------------------------------------------------------------------------
@@ -206,7 +210,7 @@ void Quadifier::onPostPresentDX()
 
     // wait until the frame has been rendered out, to keep the OpenGL and
     // Direct3D threads synchronised (after a timeout we return anyway)
-    static const unsigned timeout =  static_cast<unsigned>(1000.0/60.0 + 0.5);
+    static const unsigned timeout = static_cast<unsigned>(1000.0/60.0 + 0.5);
     m_frameDone.wait( timeout );
 }//postPresent
 
@@ -414,94 +418,70 @@ void Quadifier::onDestroy()
 
 void Quadifier::onPaint()
 {
-    unsigned readBuffer = 0;
-    unsigned lastChannel = 0;
-    {
-        // enter critical section
-        CriticalSection::Scope lock( m_swapLock );
+    // for each eye
+    for (int eye=0; eye<2; ++eye) {
+        // get the GL draw buffer identifier for the last rendered frame
+        // (i.e. the DX surface we are reading from)
+        GLuint drawBuffer = m_target[m_readBuffer].drawBuffer;
 
-        // the read buffer will become the last updated buffer
-        m_readBuffer = m_lastBuffer;
+        // select the GL draw buffer (GL_BACK or GL_BACK_LEFT or GL_BACK_RIGHT)
+        glDrawBuffer( drawBuffer );
 
-        // local copy of readBuffer so we can release lock promptly
-        readBuffer = m_readBuffer;
-
-        // which channel does that represent? (0=back, 1=left, 2=right)
-        lastChannel = m_lastChannel;
-    }
-
-    if ( m_stereoMode ) {
-        // we are in 3D stereo mode
-
-        // select the appropriate GL back buffer
-        switch ( lastChannel ) {
-            case 1:
-                glDrawBuffer( GL_BACK_LEFT );
-                ++m_channelRenderCount;
-                break;
-
-            case 2:
-                glDrawBuffer( GL_BACK_RIGHT );
-                ++m_channelRenderCount;
-                break;
-
-            default:
-                glDrawBuffer( GL_BACK );
-                break;
-        }
-    } else {
-        // we are in 2D mode
-        glDrawBuffer( GL_BACK );
-    }
-
-    // lock the shared DX/GL render target
-    if ( (m_target[readBuffer].object != 0) && glx.wglDXLockObjectsNV(
-        m_interopGLDX, 1,
-        &m_target[readBuffer].object
-    ) == GL_TRUE) {
-        
-        glx.glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-        
-        glx.glBindFramebuffer( GL_READ_FRAMEBUFFER, m_target[readBuffer].frameBuffer );
-        
-        // blit from the read framebuffer to the display framebuffer
-        glx.glBlitFramebuffer(
-            0, 0, m_width, m_height,        // source rectangle
-            0, m_height, m_width, 0,        // destination: flip the image vertically
-            GL_COLOR_BUFFER_BIT,
-            GL_LINEAR
-        );
-
-        // unlock the shared DX/GL target
-        glx.wglDXUnlockObjectsNV(
+        // lock the shared DX/GL render target
+        if ( (m_target[m_readBuffer].object != 0) && glx.wglDXLockObjectsNV(
             m_interopGLDX, 1,
             &m_target[m_readBuffer].object
-        );
-    } else
-        Log::print() << "unable to lock DX target on paint\n";
+        ) == GL_TRUE) {
+        
+            glx.glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+        
+            glx.glBindFramebuffer( GL_READ_FRAMEBUFFER, m_target[m_readBuffer].frameBuffer );
+        
+            // blit from the read framebuffer to the display framebuffer
+            glx.glBlitFramebuffer(
+                0, 0, m_width, m_height,        // source rectangle
+                0, m_height, m_width, 0,        // destination: flip the image vertically
+                GL_COLOR_BUFFER_BIT,
+                GL_LINEAR
+            );
 
-    // swap front/back display buffers
-    if ( !m_stereoMode || (m_channelRenderCount == 2) ) {
-        m_window.swapBuffers();
-        m_channelRenderCount = 0;
+            // unlock the shared DX/GL target
+            glx.wglDXUnlockObjectsNV(
+                m_interopGLDX, 1,
+                &m_target[m_readBuffer].object
+            );
+        } else
+            Log::print() << "unable to lock DX target on paint\n";
 
-        // signal that we've processed one complete frame
-        m_frameDone.signal();
+        // pick next read buffer
+        m_readBuffer = (m_readBuffer + 1) % m_target.size();
 
-        if (m_verbose) Log::print( "GLSWAP\n" );
-
-        if ( m_stereoMode ) {
-            // record time-stamp of first/last frame
-            if ( m_framesGL == 0 )
-                m_firstFrameTimeGL = getTime();
-            else
-                m_lastFrameTimeGL = getTime();
-
-            // count GL frames
-            ++m_framesGL;
-        }
+        // we are only rendering stereo if we have just rendered the left eye,
+        // otherwise this must be a 2D frame and we can just exit the loop
+        if ( drawBuffer != GL_BACK_LEFT ) break;
     }
-}
+
+    // swap the buffers
+    m_window.swapBuffers();
+
+    // signal that we've processed one complete frame
+    m_frameDone.signal();
+
+    // in verbose mode, log the point at which GL swap occurs
+    if (m_verbose) Log::print( "GLSWAP\n" );
+
+    // performance statistics are collected in stereo mode
+    if ( m_stereoMode ) {
+        // record time-stamp of first/last frame
+        if ( m_framesGL == 0 )
+            m_firstFrameTimeGL = getTime();
+        else
+            m_lastFrameTimeGL = getTime();
+
+        // count GL frames
+        ++m_framesGL;
+    }
+}//onPaint
 
 //-----------------------------------------------------------------------------
 
@@ -517,16 +497,15 @@ void Quadifier::onResize( UINT type, int w, int h )
 
 void Quadifier::onIdle()
 {
-    // if we have a new frame, force a redraw
-    if ( m_newFrame.wait(0) )
-        redraw();
 }
 
 //-----------------------------------------------------------------------------
 
 void Quadifier::redraw()
 {
+    // force an immediate paint
     m_window.invalidate();
+    m_window.update();
 }
 
 //-----------------------------------------------------------------------------
@@ -541,6 +520,10 @@ LRESULT CALLBACK Quadifier::windowProc(
     case WM_DESTROY:
         onDestroy();
         break;
+
+    case WM_USER_NEWFRAME:
+        redraw();
+        return 0;
 
     case WM_PAINT:
         onPaint();
@@ -567,7 +550,7 @@ LRESULT CALLBACK Quadifier::windowProc(
     case WM_MBUTTONUP:
     case WM_MBUTTONDBLCLK:
         PostMessage( m_sourceWindow, uMsg, wParam, lParam );
-        break;
+        return 0;
     }
 
     return DefWindowProc( hWnd, uMsg, wParam, lParam );
@@ -768,28 +751,13 @@ double Quadifier::getTime() const {
 
 //-----------------------------------------------------------------------------
 
-void Quadifier::sendFrame()
+void Quadifier::sendFrame( GLuint drawBuffer )
 {
-    {
-        // enter the critical section
-        CriticalSection::Scope lock( m_swapLock );
+    // set the OpenGL draw buffer destination
+    m_target[m_drawBuffer].drawBuffer = drawBuffer;
 
-        // record the last updated buffer
-        m_lastBuffer  = m_drawBuffer;
-
-        // record which stereo channel the buffer represents (1=left, 2=right)
-        m_lastChannel = (m_clearCount == m_clearCountPersist) ? 2 : 1;
-
-        // pick another unused draw buffer, ensuring we don't pick the
-        // currently used read buffer
-        do {
-            ++m_drawBuffer;
-            m_drawBuffer %= m_target.size();
-        } while ( m_drawBuffer == m_readBuffer );
-    }
-
-    // signal that a new frame has been rendered
-    m_newFrame.signal();
+    // select next draw buffer
+    m_drawBuffer = (m_drawBuffer + 1) % m_target.size();
 
     // count DX frames
     if ( m_stereoMode ) ++m_framesDX;
