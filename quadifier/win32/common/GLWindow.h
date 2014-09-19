@@ -76,6 +76,9 @@ public:
     /// Invalidate client area
     void invalidate();
 
+    /// Update window
+    void update();
+
     /// Returns the window handle
     HWND getHWND() const;
 

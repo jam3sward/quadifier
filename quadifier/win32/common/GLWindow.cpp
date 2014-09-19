@@ -309,6 +309,13 @@ void GLWindow::invalidate()
 
 //-----------------------------------------------------------------------------
 
+void GLWindow::update()
+{
+    if ( m_hwnd != 0 ) UpdateWindow( m_hwnd );
+}
+
+//-----------------------------------------------------------------------------
+
 HWND GLWindow::getHWND() const
 {
     return m_hwnd;
