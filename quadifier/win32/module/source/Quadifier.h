@@ -125,7 +125,7 @@ private:
      * Send the last rendered frame from DX to GL and swap the render
      * targets ready for next frame.
      */
-    void sendFrame();
+    void sendFrame( GLuint drawBuffer );
 
     /**
      * Returns true if the current render target has ever been presented
@@ -147,8 +147,6 @@ private:
 
     unsigned m_drawBuffer;  ///< buffer to draw to
     unsigned m_readBuffer;  ///< buffer to read from
-    unsigned m_lastBuffer;  ///< last buffer drawn to
-    unsigned m_lastChannel; ///< last channel (1=left, 2=right)
 
     unsigned m_width;       ///< display width in pixels
     unsigned m_height;      ///< display height in pixels
@@ -165,6 +163,7 @@ private:
         GLuint              texture;        ///< OpenGL texture
         GLuint              renderBuffer;   ///< OpenGL renderbuffer
         GLuint              frameBuffer;    ///< OpenGL framebuffer
+        GLuint              drawBuffer;     ///< OpenGL draw buffer identifier
 
         /// Default constructor
         Target() :
@@ -172,7 +171,8 @@ private:
             object(0),
             texture(0),
             renderBuffer(0),
-            frameBuffer(0)
+            frameBuffer(0),
+            drawBuffer(GL_BACK)
         {
         }
 
@@ -194,8 +194,6 @@ private:
     unsigned m_clearCount;          ///< Number of clears per frame
     unsigned m_clearCountPersist;   ///< Persistent number of clears
 
-    unsigned m_channelRenderCount;  ///< number of channels rendered
-
     double   m_firstFrameTimeGL;    ///< time-stamp of first GL frame
     double   m_lastFrameTimeGL;     ///< time-stamp of last GL frame
 
@@ -205,10 +203,7 @@ private:
 
     HANDLE m_interopGLDX;           ///< Handle for the OpenGL/DX interop
 
-    Event m_newFrame;               ///< Signals that a new frame arrived
     Event m_frameDone;              ///< Signals when frame is rendered out
-
-    CriticalSection m_swapLock;     ///< Critical section for buffer swaps
 
     Extensions glx;                 ///< Stores the OpenGL extension functions
 
