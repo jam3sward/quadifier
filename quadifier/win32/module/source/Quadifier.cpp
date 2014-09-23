@@ -167,6 +167,9 @@ void Quadifier::onPrePresentDX(
     // get the current render target
     IDirect3DSurface9 *renderTarget = 0;
     if ( m_device->GetRenderTarget( 0, &renderTarget ) == S_OK ) {
+        // release the render target (we are only storing it's pointer as
+        // a hash for comparison purposes)
+        renderTarget->Release();
 
         // insert the render target in the set of presented targets
         // if not already present
@@ -394,6 +397,8 @@ bool Quadifier::onCreate()
 void Quadifier::onDestroy()
 {
     Log::print( "onDestroy\n" );
+
+    Log::print("DX presented targets = ") << m_presentedTargets.size() << endl;
 
     Log::print("GL frames = ") << m_framesGL << endl;
     Log::print("DX frames = ") << m_framesDX << endl;
