@@ -143,17 +143,15 @@ void Quadifier::onPreClearDX(
     // restore the viewport
     if ( savedViewport )
         m_device->SetViewport( &viewport );
+
+    // count number of clears per frame
+    ++m_clearCount;
 }
 
 //-----------------------------------------------------------------------------
 
 void Quadifier::onPostClearDX()
 {
-    // is this the main display render target?
-    if ( !isPresentedRenderTarget() ) return;
-
-    // count number of clears per frame
-    ++m_clearCount;
 }
 
 //-----------------------------------------------------------------------------
