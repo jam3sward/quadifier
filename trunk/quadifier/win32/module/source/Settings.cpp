@@ -27,10 +27,73 @@
 //
 //-----------------------------------------------------------------------------
 
+#include <fstream>
+#include <algorithm>
+using namespace std;
+
+#include "Log.h"
+using namespace hive;
+
+//-----------------------------------------------------------------------------
+
 const Settings & Settings::get()
 {
     static Settings settings;
     return settings;
+}
+
+//-----------------------------------------------------------------------------
+
+bool Settings::load( const std::string & fileName )
+{
+    // open the file
+    ifstream input( fileName.c_str() );
+    if ( !input ) return false;
+
+    struct {
+        // convert string to boolean
+        bool readBool( std::string text ) {
+            // convert to lower case
+            std::transform( text.begin(), text.end(), text.begin(), ::tolower );
+
+            // accept sensible values for true (anything else is false)
+            return ( text == "yes" ) || ( text == "true" ) || ( text == "1" );
+        }
+    } local;
+
+    do {
+        // read key
+        string key;
+        input >> ws >> key;
+        if ( !input ) break;
+
+        // read value
+        string value;
+        input >> ws >> value;
+        if ( !input ) {
+            // missing values return an error
+            return false;
+        }
+
+        Log::print("Settings: ") << key << " = " << value << endl;
+
+        // store key/value
+        if ( key == "passThrough" )
+            passThrough = local.readBool( value );
+        else if ( key == "useTexture" )
+            useTexture = local.readBool( value );
+        else if ( key == "preventModeChange" )
+            preventModeChange = local.readBool( value );
+        else {
+            // unrecognised keys are currently ignored
+        }
+
+    } while (true);
+
+    // close the file
+    input.close();
+
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -50,6 +113,11 @@ Settings::Settings() :
 
     // force use of Direct3D9Ex on Vista upwards
     forceDirect3D9Ex = vistaUp;
+
+    // attempt to load settings from file
+    static const std::string fileName( "quadifier.ini" );
+    if ( !load( fileName ) )
+        Log::print() << "Failed to load settings from [" << fileName << "]\n";
 }
 
 //-----------------------------------------------------------------------------

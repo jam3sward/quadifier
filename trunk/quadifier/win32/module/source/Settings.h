@@ -27,6 +27,10 @@
 //
 //-----------------------------------------------------------------------------
 
+#include <string>
+
+//-----------------------------------------------------------------------------
+
 struct Settings {
     bool passThrough;       ///< Enable "pass through" mode
     bool forceDirect3D9Ex;  ///< Force Direct3D9 applications to use Direct3D9Ex
@@ -35,6 +39,9 @@ struct Settings {
 
     /// Returns the current settings
     static const Settings & get();
+
+    /// Load settings from file
+    bool load( const std::string & fileName );
 
 private:
     Settings();
