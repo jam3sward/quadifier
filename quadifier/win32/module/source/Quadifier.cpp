@@ -67,6 +67,7 @@ Quadifier::Quadifier(
     m_clearCountPersist = 0;
     m_firstFrameTimeGL = 0.0;
     m_lastFrameTimeGL = 0.0;
+    m_quadListGL = 0;
     m_thread = 0;
     m_sourceWindow = 0;
     m_interopGLDX = 0;
@@ -387,6 +388,17 @@ bool Quadifier::onCreate()
         success = ( i == m_target.size() );
     } while (0);
 
+    // default OpenGL settings
+    glEnable( GL_COLOR_MATERIAL );
+    glDisable( GL_LIGHTING );
+    glDisable( GL_DEPTH_TEST );
+
+    // default viewing system
+    glMatrixMode( GL_MODELVIEW );
+    glLoadIdentity();
+    glMatrixMode( GL_PROJECTION );
+    glLoadIdentity();
+
     return success;
 }//onCreate
 
@@ -394,6 +406,12 @@ bool Quadifier::onCreate()
 
 void Quadifier::onDestroy()
 {
+    // free OpenGL display list
+    if ( m_quadListGL != 0 ) {
+        glDeleteLists( m_quadListGL, 1 );
+        m_quadListGL = 0;
+    }
+
     Log::print( "onDestroy\n" );
 
     Log::print("DX presented targets = ") << m_presentedTargets.size() << endl;
@@ -421,6 +439,21 @@ void Quadifier::onDestroy()
 
 void Quadifier::onPaint()
 {
+    // draw to default framebuffer
+    glx.glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+
+    // are we using textures?
+    const bool useTexture = Settings::get().useTexture;
+
+    // save OpenGL state
+    glPushAttrib( GL_ENABLE_BIT | GL_CURRENT_BIT );
+
+    // enable texturing if required
+    if ( useTexture ) {
+        glEnable( GL_TEXTURE_2D );
+        glColor3f( 1, 1, 1 );
+    }
+
     // for each eye
     for (int eye=0; eye<2; ++eye) {
         // get the GL draw buffer identifier for the last rendered frame
@@ -435,18 +468,52 @@ void Quadifier::onPaint()
             m_interopGLDX, 1,
             &m_target[m_readBuffer].object
         ) == GL_TRUE) {
+
+            // are we rendering using textures or framebuffer blitting?
+            if ( !useTexture ) {
+                //-- render using framebuffer blitting        
+                glx.glBindFramebuffer( GL_READ_FRAMEBUFFER, m_target[m_readBuffer].frameBuffer );
         
-            glx.glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-        
-            glx.glBindFramebuffer( GL_READ_FRAMEBUFFER, m_target[m_readBuffer].frameBuffer );
-        
-            // blit from the read framebuffer to the display framebuffer
-            glx.glBlitFramebuffer(
-                0, 0, m_width, m_height,        // source rectangle
-                0, m_height, m_width, 0,        // destination: flip the image vertically
-                GL_COLOR_BUFFER_BIT,
-                GL_LINEAR
-            );
+                // blit from the read framebuffer to the display framebuffer
+                glx.glBlitFramebuffer(
+                    0, 0, m_width, m_height,        // source rectangle
+                    0, m_height, m_width, 0,        // destination: flip the image vertically
+                    GL_COLOR_BUFFER_BIT,
+                    GL_LINEAR
+                );
+            } else {
+                //-- render using texture
+
+                // bind the texture
+                glBindTexture( GL_TEXTURE_2D, m_target[m_readBuffer].texture );
+
+                // build our display list if it doesn't exist already
+                if ( m_quadListGL == 0 ) {
+                    // generate display list
+                    m_quadListGL = glGenLists( 1 );
+
+                    // draw a quad into the display list
+                    glNewList( m_quadListGL, GL_COMPILE );
+                        glBegin( GL_QUADS );
+                            glTexCoord2i( 0, 0 );
+                            glVertex3f( -1.0f, +1.0f, 0.0f );
+
+                            glTexCoord2i( 1, 0 );
+                            glVertex3f( +1.0f, +1.0f, 0.0f );
+
+                            glTexCoord2i( 1, 1 );
+                            glVertex3f( +1.0f, -1.0f, 0.0f );
+
+                            glTexCoord2i( 0, 1 );
+                            glVertex3f( -1.0f, -1.0f, 0.0f );
+                        glEnd();
+                    glEndList();
+                }
+
+                // draw a large textured quad
+                if ( m_quadListGL != 0 )
+                    glCallList( m_quadListGL );
+            }
 
             // unlock the shared DX/GL target
             glx.wglDXUnlockObjectsNV(
@@ -463,6 +530,9 @@ void Quadifier::onPaint()
         // otherwise this must be a 2D frame and we can just exit the loop
         if ( drawBuffer != GL_BACK_LEFT ) break;
     }
+
+    // restore OpenGL state
+    glPopAttrib();
 
     // swap the buffers
     m_window.swapBuffers();

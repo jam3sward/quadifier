@@ -197,6 +197,8 @@ private:
     double   m_firstFrameTimeGL;    ///< time-stamp of first GL frame
     double   m_lastFrameTimeGL;     ///< time-stamp of last GL frame
 
+    GLuint   m_quadListGL;          ///< GL display list for textured quad
+
     uintptr_t m_thread;             ///< Handle of the rendering thread
 
     HWND m_sourceWindow;            ///< Window handle of source (Direct3D)
