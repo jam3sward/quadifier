@@ -84,6 +84,8 @@ bool Settings::load( const std::string & fileName )
             useTexture = local.readBool( value );
         else if ( key == "preventModeChange" )
             preventModeChange = local.readBool( value );
+        else if ( key == "matchOriginalMSAA" )
+            matchOriginalMSAA = local.readBool( value );
         else {
             // unrecognised keys are currently ignored
         }
@@ -102,7 +104,8 @@ Settings::Settings() :
     passThrough( false ),
     forceDirect3D9Ex( false ),
     useTexture( false ),
-    preventModeChange( true )
+    preventModeChange( true ),
+    matchOriginalMSAA( true )
 {
     // initialise OS version info structure
     OSVERSIONINFO info = {};

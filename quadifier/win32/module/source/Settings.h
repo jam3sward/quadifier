@@ -36,6 +36,7 @@ struct Settings {
     bool forceDirect3D9Ex;  ///< Force Direct3D9 applications to use Direct3D9Ex
     bool useTexture;        ///< Use textures (true) or renderbuffers (false)
     bool preventModeChange; ///< Prevent application from changing display mode
+    bool matchOriginalMSAA; ///< Should GL use same number of samples as DX?
 
     /// Returns the current settings
     static const Settings & get();
