@@ -445,6 +445,9 @@ void Quadifier::onPaint()
     // are we using textures?
     const bool useTexture = Settings::get().useTexture;
 
+    // are we forced to use blit?
+    const bool mustUseBlit = !Settings::get().matchOriginalMSAA;
+
     // save OpenGL state
     glPushAttrib( GL_ENABLE_BIT | GL_CURRENT_BIT );
 
@@ -470,7 +473,7 @@ void Quadifier::onPaint()
         ) == GL_TRUE) {
 
             // are we rendering using textures or framebuffer blitting?
-            if ( !useTexture ) {
+            if ( !useTexture || mustUseBlit ) {
                 //-- render using framebuffer blitting        
                 glx.glBindFramebuffer( GL_READ_FRAMEBUFFER, m_target[m_readBuffer].frameBuffer );
         
@@ -750,7 +753,21 @@ unsigned __stdcall Quadifier::threadFunc( void *context )
     // number of desired anti-alias samples to match DirectX
     int desiredSamples = static_cast<int>(self->m_samplesDX);
 
-    // request the same number of multisamples as DirectX
+    // do we want to match original number of multisamples used in DirectX?
+    // if not, set it to zero
+    if ( Settings::get().matchOriginalMSAA ) {
+        Log::print()
+            << "matchOriginalMSAA is ENABLED\n"
+            << "GL will attempt to use the same multisample format as DX\n";
+    } else {
+        Log::print()
+            << "matchOriginalMSAA is DISABLED\n"
+            << "GL is not forced to use the sample multisample format as DX\n";
+
+        desiredSamples = 0;
+    }
+
+    // optional: request the same number of multisamples as DirectX
     if ( desiredSamples > 0 ) {
         attributes[WGL_SAMPLE_BUFFERS_ARB] = GL_TRUE;
         attributes[WGL_SAMPLES_ARB] = desiredSamples;
