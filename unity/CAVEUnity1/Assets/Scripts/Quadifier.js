@@ -104,7 +104,6 @@ class CameraRig {
 	public var left	 :Camera;
 	public var right :Camera;
 	public var screen :ProjectionScreen;
-	var frustum :Frustum;
 	
 	// creates a camera rig for a particular screen
 	function CameraRig(theScreen :ProjectionScreen) {
@@ -141,7 +140,7 @@ class CameraRig {
 		
 		// set the camera frustum based on eye position and viewing
 		// distance from screen
-		frustum.setCameraFrustum(
+		Frustum.setCameraFrustum(
 			camera,
 			(-eye.x - 0.5f * this.screen.width) * near / viewDistance,
 			(-eye.x + 0.5f * this.screen.width) * near / viewDistance,
