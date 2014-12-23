@@ -1,5 +1,6 @@
 #include "Settings.h"
 #include <Windows.h>
+#include <VersionHelpers.h>
 
 //-----------------------------------------------------------------------------
 //
@@ -112,7 +113,7 @@ Settings::Settings() :
     info.dwOSVersionInfoSize = sizeof(info);
 
     // are we on Windows Vista or higher?
-    bool vistaUp = GetVersionEx(&info) && (info.dwMajorVersion >= 6);
+    bool vistaUp = IsWindowsVistaOrGreater();
 
     // force use of Direct3D9Ex on Vista upwards
     forceDirect3D9Ex = vistaUp;
