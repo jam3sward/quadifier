@@ -178,7 +178,7 @@ bool GLWindow::create(
             pixelFormat = 0;
             break;
         }
-    } while (0);
+    } while (0,0);
 
     // delete temporary OpenGL context
     if ( glcontext != 0 ) {
@@ -246,7 +246,7 @@ bool GLWindow::create(
 
         // success
         return true;
-    } while (0);
+    } while (0,0);
 
     // something failed, and we need to clean up
 
