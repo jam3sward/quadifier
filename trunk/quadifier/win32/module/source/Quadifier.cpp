@@ -712,17 +712,17 @@ unsigned __stdcall Quadifier::threadFunc( void *context )
     }
 
     // Get the old window proc of the source window
-    LONG_PTR oldWindowProc = GetWindowLongPtr( self->m_sourceWindow, GWL_WNDPROC );
+    LONG_PTR oldWindowProc = GetWindowLongPtr( self->m_sourceWindow, GWLP_WNDPROC );
 
     // Store the oldWindowProc pointer in user data on the source window
     // (this pointer is later used to call the original window proc)
-    SetWindowLongPtr( self->m_sourceWindow, GWL_USERDATA, oldWindowProc );
+    SetWindowLongPtr( self->m_sourceWindow, GWLP_USERDATA, oldWindowProc );
 
     // Change the source window proc to point to our own WindowProcSource
     // function. This allows us to subclass the window in the source
     // application and intercept its messages.
     SetWindowLongPtr(
-        self->m_sourceWindow, GWL_WNDPROC,
+        self->m_sourceWindow, GWLP_WNDPROC,
         reinterpret_cast<LONG_PTR>(WindowProcSource)
     );
 

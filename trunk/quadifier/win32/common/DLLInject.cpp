@@ -5,6 +5,7 @@
 #include <iostream>
 #include <Tlhelp32.h>
 #include <windows.h>
+#include <VersionHelpers.h>
 #include "NtCreateThreadEx.h"
 
 //-----------------------------------------------------------------------------
@@ -85,11 +86,19 @@ struct Data {
     char                    pathName[_MAX_PATH];    ///< DLL path name
 } data;
 
+#ifdef _M_X64
+// The 64-bit loader code is linked from an external assembler file,
+// because inline assembler isn't supported for 64-bit
+extern "C" { void loaderCode(void*);}
+extern "C" { void loaderCodeEnd(void);}
+#endif//_M_X64
+
+#ifdef _M_IX86
 /**
- * This code is run on a thread created inside the target process.
+ * This 32-bit code is run on a thread created inside the target process.
  * It loads the specified DLL then exits the thread.
  */
-static __declspec(naked) DWORD WINAPI codeBegin( LPVOID /*param*/ ) {
+static __declspec(naked) DWORD WINAPI loaderCode( LPVOID /*param*/ ) {
     __asm {
         mov eax, dword ptr [ESP+4]
         push ebx
@@ -109,7 +118,8 @@ static __declspec(naked) DWORD WINAPI codeBegin( LPVOID /*param*/ ) {
         pop ebx
         ret 4
     }
-} static __declspec(naked) void codeEnd() { __asm ret 4 }
+} static __declspec(naked) void loaderCodeEnd() { __asm ret 4 }
+#endif//_M_IX86
 
 } // namespace
 
@@ -252,21 +262,21 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
         if ( RtlCreateUserThread == 0 ) break;
 
         // convert pointer types so we can do arithmetic with them
-        char *codeBeginPtr = reinterpret_cast<char*>(codeBegin);
-        char *codeEndPtr   = reinterpret_cast<char*>(codeEnd);
+        char *codeBeginPtr = reinterpret_cast<char*>(loaderCode);
+        char *codeEndPtr   = reinterpret_cast<char*>(loaderCodeEnd);
 
         // verify assumption that codeEnd is assembled after codeBegin
         assert( codeEndPtr > codeBeginPtr );
         if ( codeEndPtr <= codeBeginPtr ) break;
 
         // calculate size of inline assembler code
-        unsigned codeSize = codeEndPtr - codeBeginPtr;
+        size_t codeSize = codeEndPtr - codeBeginPtr;
 
         // size of data
         unsigned dataSize = sizeof(data);
 
         // total memory required
-        unsigned memorySize = codeSize + dataSize;
+        size_t memorySize = codeSize + dataSize;
 
         // allocate memory in target process
         memory = VirtualAllocEx(
@@ -283,7 +293,7 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
         LPVOID codeAddress = memory;
         WriteProcessMemory(
             process, codeAddress,
-            codeBegin, codeSize,
+            loaderCode, codeSize,
             &numWritten
         );
         if ( numWritten != codeSize ) break;
@@ -334,7 +344,7 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
         info.dwOSVersionInfoSize = sizeof(info);
 
         // are we on Windows Vista or above?
-        bool vistaUp = GetVersionEx(&info) && (info.dwMajorVersion >= 6);
+        bool vistaUp = IsWindowsVistaOrGreater();
 
         // We will try three different methods to create our thread inside the
         // remote process:
@@ -395,7 +405,7 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
 
         // success depends on thread exit code
         result = (exitCode == ERROR_SUCCESS);
-    } while (0);
+    } while (0,0);
 
     // close the thread handle
     if ( thread != 0 ) CloseHandle( thread );
