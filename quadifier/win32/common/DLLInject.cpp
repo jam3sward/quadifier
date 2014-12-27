@@ -77,6 +77,7 @@ typedef FNRtlExitUserThread *PFNRtlExitUserThread;
 typedef DWORD (WINAPI *PFNGetLastError)( void );
 
 /// Data structure to be passed to our remote thread
+/// CAUTION: this layout must match the offsets used in loader.asm for X64
 struct Data {
     PFNLoadLibraryA         LoadLibrary;
     PFNExitThread           ExitThread;
