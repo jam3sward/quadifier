@@ -164,6 +164,7 @@ private:
         GLuint              renderBuffer;   ///< OpenGL renderbuffer
         GLuint              frameBuffer;    ///< OpenGL framebuffer
         GLuint              drawBuffer;     ///< OpenGL draw buffer identifier
+		HANDLE              shareHandle;    // JDW 21/10/15 added for interop to work with ATI
 
         /// Default constructor
         Target() :
