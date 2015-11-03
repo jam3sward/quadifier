@@ -284,15 +284,15 @@ bool Quadifier::onCreate()
                 }
             }
 
-			// JDW - register ShareHandle for ATI interoperabiity
-			Log::print("Setting SharedHandle ") << m_target[i].shareHandle << endl;;
-			if (glx.wglDXSetResourceShareHandleNV != 0) {
-				glx.wglDXSetResourceShareHandleNV(m_target[i].surface, m_target[i].shareHandle);
-			}
-			else {
-				Log::print("Failed to set SharedHandle: ") << m_target[i].shareHandle << endl;
-				break;
-			}
+            // JDW - register ShareHandle for ATI/AMD interoperability
+            Log::print("Setting SharedHandle ") << m_target[i].shareHandle << endl;;
+            if (glx.wglDXSetResourceShareHandleNV != 0) {
+                glx.wglDXSetResourceShareHandleNV(m_target[i].surface, m_target[i].shareHandle);
+            }
+            else {
+                Log::print("Failed to set SharedHandle: ") << m_target[i].shareHandle << endl;
+                break;
+            }
 
             Log::print( "registering DX object " ) << i << endl;
             m_target[i].object = glx.wglDXRegisterObjectNV(
@@ -302,7 +302,7 @@ bool Quadifier::onCreate()
                 useTexture ? textureMode : GL_RENDERBUFFER,
                 WGL_ACCESS_READ_ONLY_NV
             );
-			
+
             if ( m_target[i].object == 0 ) {
                 DWORD error = GetLastError();
                 Log::print( "error: wglDXRegisterObjectNV failed for render target: " )
@@ -325,7 +325,7 @@ bool Quadifier::onCreate()
 
                 // important to lock before using glFramebufferTexture2D
                 if ( glx.wglDXLockObjectsNV(m_interopGLDX, 1, &m_target[i].object) == GL_TRUE ) {
-					
+
                     // attach colour buffer texture
                     glx.glFramebufferTexture2D(
                         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -334,12 +334,11 @@ bool Quadifier::onCreate()
 
                     // unlock
                     if (glx.wglDXUnlockObjectsNV(m_interopGLDX, 1, &m_target[i].object) != GL_TRUE ) {
-						Log::print() << "Error. UnLockObjectsNV for texture " << i << " failed " << endl;
-					}
+                        Log::print() << "Error: UnLockObjectsNV for texture " << i << " failed " << endl;
+                    }
+                } else {
+                    Log::print() << "Error: LockObjectsNV for texture " << i << " failed " << endl;
                 }
-				else {
-					Log::print() << "Error. LockObjectsNV for texture " << i << " failed " << endl;
-				}
             } else {
                 // using GL_RENDERBUFFER
 
@@ -353,13 +352,12 @@ bool Quadifier::onCreate()
 
                     // unlock
                     if (glx.wglDXUnlockObjectsNV(m_interopGLDX, 1, &m_target[i].object) != GL_TRUE ) {
-						Log::print() << "Error. UnLockObjectsNV for renderBuffer " << i << " failed " << endl;
-					}
+                        Log::print() << "Error: UnLockObjectsNV for renderBuffer " << i << " failed " << endl;
+                    }
+                } else {
+                    Log::print() << "Error: LockObjectsNV for renderBuffer " << i << " failed " << endl;
                 }
-				else {
-					Log::print() << "Error. LockObjectsNV for renderBuffer " << i << " failed " << endl;
-				}
-				
+
                 // this table defines the renderbuffer parameters to be listed
                 struct {
                     GLenum name;
@@ -387,13 +385,14 @@ bool Quadifier::onCreate()
                 }
 
                 glx.glBindRenderbuffer( GL_RENDERBUFFER, 0 );
-				
+
             }
 
             // log the framebuffer status (should be GL_FRAMEBUFFER_COMPLETE)
             GLenum status = glx.glCheckFramebufferStatus(GL_FRAMEBUFFER);
             Log::print() << "glCheckFramebufferStatus = " << GLFRAMEBUFFERSTATUStoString( status ) << endl;
-			Log::print() << "For ATI cards this may show GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT but gets corrected later.\n"; // JDW added for clarification
+            // JDW added for clarification:
+            Log::print() << "For ATI cards this may show GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT but gets corrected later.\n";
         }
 
         // successful only if all render buffers were created and initialised
@@ -1039,23 +1038,24 @@ void Quadifier::createResources()
 
     // create render target(s)
     for (unsigned i=0; i < m_target.size(); ++i) {
-		// initialise share handle to Null
-		m_target[i].shareHandle = NULL; // JDW added for ATI compatability
+        // initialise share handle to NULL
+        // JDW added for ATI compatibility
+        m_target[i].shareHandle = NULL;
 
-		// create render target
-		if (m_device->CreateRenderTarget(
-			m_width,
-			m_height,
-			displayMode.Format,
-			multisampleType,
-			0,
-			FALSE,
-			&m_target[i].surface,
-			&m_target[i].shareHandle
-			) != S_OK) {
-			Log::print("error: failed to create DX render target\n");
-			break;
-		}
+        // create render target
+        if (m_device->CreateRenderTarget(
+            m_width,
+            m_height,
+            displayMode.Format,
+            multisampleType,
+            0,
+            FALSE,
+            &m_target[i].surface,
+            &m_target[i].shareHandle
+        ) != S_OK) {
+            Log::print("error: failed to create DX render target\n");
+            break;
+        }
     }
 
     // get the current render target and save for later use
