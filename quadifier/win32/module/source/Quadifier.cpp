@@ -497,10 +497,6 @@ void Quadifier::onPaint()
                     GL_LINEAR
                 );
 
-				// log the framebuffer status (should be GL_FRAMEBUFFER_COMPLETE)
-				GLenum status = glx.glCheckFramebufferStatus(GL_FRAMEBUFFER);
-				Log::print() << "glCheckFramebufferStatus = " << GLFRAMEBUFFERSTATUStoString(status) << endl;
-
             } else {
                 //-- render using texture
 
