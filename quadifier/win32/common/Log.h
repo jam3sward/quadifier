@@ -39,6 +39,14 @@ namespace hive {
  */
 class Log {
 public:
+    /// Defines logging levels, in increasing level of detail
+    enum Level {
+        Error,
+        Warning,
+        Info,
+        Verbose
+    };
+
     /// Virtual Destructor
     virtual ~Log();
 
@@ -51,17 +59,37 @@ public:
     /// Close the log file
     static void close();
 
+    /// Returns true if we are logging errors (least verbose mode)
+    static bool errors();
+
+    /// Returns true if we are logging warnings
+    static bool warnings();
+
+    /// Returns true if we are logging informational messages
+    static bool info();
+
+    /// Returns true if we are logging everything (most verbose mode)
+    static bool verbose();
+
     /// Print a message to the log
     static std::ostream & print( const std::string & text = "" );
 
     /// Provides access to the log output stream
     static std::ostream & out();
 
+    /// Set the current logging level
+    Log & setLevel( Log::Level level );
+
+    /// Get the current logging level
+    Level getLevel() const;
+
 private:
     /// Default Constructor
     Log();
 
     std::ofstream m_stream; ///< the log output stream
+
+    Level m_level;          ///< the current log level
 };
 
 } // namespace hive

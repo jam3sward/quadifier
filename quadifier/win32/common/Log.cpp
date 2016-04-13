@@ -44,7 +44,8 @@ Log::~Log()
 
 //-----------------------------------------------------------------------------
 
-Log::Log()
+Log::Log() :
+    m_level( Level::Info )
 {
 }
 
@@ -71,6 +72,34 @@ void Log::close()
 
 //-----------------------------------------------------------------------------
 
+bool Log::info()
+{
+    return get().getLevel() >= Level::Info;
+}
+
+//-----------------------------------------------------------------------------
+
+bool Log::warnings()
+{
+    return get().getLevel() >= Level::Warning;
+}
+
+//-----------------------------------------------------------------------------
+
+bool Log::errors()
+{
+    return get().getLevel() >= Level::Error;
+}
+
+//-----------------------------------------------------------------------------
+
+bool Log::verbose()
+{
+    return get().getLevel() >= Level::Verbose;
+}
+
+//-----------------------------------------------------------------------------
+
 std::ostream & Log::print( const std::string & text )
 {
     unsigned timeStamp = static_cast<unsigned>(
@@ -91,6 +120,21 @@ std::ostream & Log::print( const std::string & text )
 std::ostream & Log::out()
 {
     return get().m_stream;
+}
+
+//-----------------------------------------------------------------------------
+
+Log & Log::setLevel( Log::Level level )
+{
+    m_level = level;
+    return *this;
+}
+
+//-----------------------------------------------------------------------------
+
+Log::Level Log::getLevel() const
+{
+    return m_level;
 }
 
 //-----------------------------------------------------------------------------
