@@ -35,7 +35,8 @@ using namespace std;
 IDirect3D9Proxy::IDirect3D9Proxy( LPDIRECT3D9 direct3D ) :
     m_parent( direct3D )
 {
-    Log::print() << "IDirect3D9Proxy(" << direct3D << ")\n";
+    if (Log::info())
+        Log::print() << "IDirect3D9Proxy(" << direct3D << ")\n";
 }
 
 //-----------------------------------------------------------------------------
@@ -48,8 +49,10 @@ IDirect3D9Proxy::~IDirect3D9Proxy()
 
 HRESULT IDirect3D9Proxy::QueryInterface( const IID &riid, void **ppvObj )
 {
-    Log::print() << "IDirect3D9Proxy::QueryInterface("
-                << GUIDtoObjectName(riid) << ")\n";
+    if (Log::info()) {
+        Log::print() << "IDirect3D9Proxy::QueryInterface("
+                    << GUIDtoObjectName(riid) << ")\n";
+    }
 
     return m_parent->QueryInterface(riid, ppvObj);
 }
@@ -219,12 +222,14 @@ HRESULT IDirect3D9Proxy::CreateDevice(
     D3DPRESENT_PARAMETERS *pPresentationParameters,
     IDirect3DDevice9 **ppReturnedDeviceInterface
 ) {
-    Log::print() << "CreateDevice(" << Adapter << ','
-        << DeviceType << ','
-        << hFocusWindow << ','
-        << BehaviorFlags << ','
-        << pPresentationParameters << ','
-        << ppReturnedDeviceInterface << ")\n";
+    if (Log::info()) {
+        Log::print() << "CreateDevice(" << Adapter << ','
+            << DeviceType << ','
+            << hFocusWindow << ','
+            << BehaviorFlags << ','
+            << pPresentationParameters << ','
+            << ppReturnedDeviceInterface << ")\n";
+    }
 
     HRESULT result = 0;
 
@@ -232,8 +237,9 @@ HRESULT IDirect3D9Proxy::CreateDevice(
 
     if ( !Settings::get().forceDirect3D9Ex ) {
         // using conventional Direct3D9
-        
-        Log::print() << "using Direct3D9\n";
+
+        if (Log::info())
+            Log::print() << "using Direct3D9\n";
 
         result = m_parent->CreateDevice(
             Adapter,
@@ -246,7 +252,8 @@ HRESULT IDirect3D9Proxy::CreateDevice(
     } else { 
         // using Direct3D9Ex instead (substitution)
 
-        Log::print() << "using Direct3D9Ex\n";
+        if (Log::info())
+            Log::print() << "using Direct3D9Ex\n";
 
         // upcast parent to IDirect3D9Ex
         IDirect3D9Ex *parent = reinterpret_cast<IDirect3D9Ex*>(m_parent);
@@ -268,8 +275,10 @@ HRESULT IDirect3D9Proxy::CreateDevice(
     }
 
     *ppReturnedDeviceInterface = new IDirect3DDevice9Proxy( device, this );
-    Log::print() << "new IDirect3DDevice9Proxy(" << device << ',' << this
-        << ")=" << *ppReturnedDeviceInterface << endl;
+    if (Log::info()) {
+        Log::print() << "new IDirect3DDevice9Proxy(" << device << ',' << this
+            << ")=" << *ppReturnedDeviceInterface << endl;
+    }
 
     return result;
 }

@@ -39,8 +39,10 @@ IDirect3DDevice9Proxy::IDirect3DDevice9Proxy(
     m_device( device ),
     m_direct3D( direct3D )
 {
-    Log::print() << "IDirect3DDevice9Proxy("
-        << device << ',' << direct3D << ")\n";
+    if (Log::info()) {
+        Log::print() << "IDirect3DDevice9Proxy("
+            << device << ',' << direct3D << ")\n";
+    }
 
     // when the D3D device is created, call onCreateDX
     if ( !Settings::get().passThrough ) m_quad.onCreateDX();
@@ -55,9 +57,11 @@ IDirect3DDevice9Proxy::~IDirect3DDevice9Proxy() {
 
 HRESULT IDirect3DDevice9Proxy::QueryInterface( REFIID riid, void **ppvObj)
 {
-    Log::print() << "IDirect3DDevice9Proxy::QueryInterface("
-                 << GUIDtoObjectName(riid) << ")\n";
-
+    if (Log::info()) {
+        Log::print() << "IDirect3DDevice9Proxy::QueryInterface("
+                     << GUIDtoObjectName(riid) << ")\n";
+    }
+    
     HRESULT result = m_device->QueryInterface( riid, ppvObj ); 
 
     if ( result == S_OK ) {
@@ -195,14 +199,16 @@ UINT IDirect3DDevice9Proxy::GetNumberOfSwapChains()
 HRESULT IDirect3DDevice9Proxy::Reset(
     D3DPRESENT_PARAMETERS *pPresentParam
 ) {
-
-    Log::print("IDirect3DDevice9::Reset: ")
-        << pPresentParam->BackBufferWidth << 'x' << pPresentParam->BackBufferHeight << ','
-        << "backBuffers=" << pPresentParam->BackBufferCount << ','
-        << "windowed=" << pPresentParam->Windowed << endl;
+    if (Log::info()) {
+        Log::print( "IDirect3DDevice9::Reset: " )
+            << pPresentParam->BackBufferWidth << 'x' << pPresentParam->BackBufferHeight << ','
+            << "backBuffers=" << pPresentParam->BackBufferCount << ','
+            << "windowed=" << pPresentParam->Windowed << endl;
+    }
 
     if ( pPresentParam->Windowed == FALSE ) {
-        Log::print("Forcing windowed mode\n");
+        if (Log::info())
+            Log::print("Forcing windowed mode\n");
         // enforce windowed mode
         pPresentParam->Windowed = TRUE;
         pPresentParam->FullScreen_RefreshRateInHz = 0;
@@ -245,11 +251,13 @@ HRESULT IDirect3DDevice9Proxy::Present(
         // application source window
     }
 
-    //Log::print() << "Present("
-    //  << pSourceRect << ','
-    //  << pDestRect << ','
-    //  << hDestWindowOverride << ','
-    //  << pDirtyRegion << ") = " << result << std::endl;
+    if (Log::verbose()) {
+        Log::print() << "Present("
+            << pSourceRect << ','
+            << pDestRect << ','
+            << hDestWindowOverride << ','
+            << pDirtyRegion << ") = " << result << std::endl;
+    }
 
     if ( !passThrough ) {
         m_quad.onPostPresentDX();
@@ -338,13 +346,15 @@ HRESULT IDirect3DDevice9Proxy::CreateTexture(
         pSharedHandle
     );
 
-    Log::print() << "CreateTexture("
-        << Width << ',' << Height << ','
-        << Usage << ','
-        << Format << ','
-        << Pool << ','
-        << ppTexture << ','
-        << pSharedHandle << ") = " << result << std::endl;
+    if (Log::verbose()) {
+        Log::print() << "CreateTexture("
+            << Width << ',' << Height << ','
+            << Usage << ','
+            << Format << ','
+            << Pool << ','
+            << ppTexture << ','
+            << pSharedHandle << ") = " << result << std::endl;
+    }
 
     return result;
 }
@@ -426,14 +436,16 @@ HRESULT IDirect3DDevice9Proxy::CreateVertexBuffer(
 
     string poolChanged( (newPool != Pool) ? ":changed" : "" );
 
-    Log::print() << "CreateVertexBuffer("
-        << Length << ','
-        << Usage << "=(" << D3DUSAGEtoString( Usage ) << "),"
-        << FVF << "=(" << D3DFVFtoString( FVF ) << "),"
-        << Pool << "=(" << D3DPOOLtoString( Pool ) << poolChanged << "),"
-        << ppVertexBuffer
-        << '[' << ((ppVertexBuffer != 0) ? *ppVertexBuffer : 0) << "],"
-        << pSharedHandle << ") = " << result << std::endl;
+    if (Log::verbose()) {
+        Log::print() << "CreateVertexBuffer("
+            << Length << ','
+            << Usage << "=(" << D3DUSAGEtoString( Usage ) << "),"
+            << FVF << "=(" << D3DFVFtoString( FVF ) << "),"
+            << Pool << "=(" << D3DPOOLtoString( Pool ) << poolChanged << "),"
+            << ppVertexBuffer
+            << '[' << ((ppVertexBuffer != 0) ? *ppVertexBuffer : 0) << "],"
+            << pSharedHandle << ") = " << result << std::endl;
+    }
 
     return result;
 }
@@ -463,14 +475,16 @@ HRESULT IDirect3DDevice9Proxy::CreateIndexBuffer(
 
     string poolChanged( (newPool != Pool) ? ":changed" : "" );
 
-    Log::print() << "CreateIndexBuffer("
-        << Length << ','
-        << Usage << "=(" << D3DUSAGEtoString( Usage ) << "),"
-        << Format << "=(" << D3DFORMATtoString( Format ) << "),"
-        << Pool << "=(" << D3DPOOLtoString( Pool ) << poolChanged << "),"
-        << ppIndexBuffer
-        << '[' << ((ppIndexBuffer != 0) ? *ppIndexBuffer : 0) << "],"
-        << pSharedHandle << ") = " << result << std::endl;
+    if (Log::verbose()) {
+        Log::print() << "CreateIndexBuffer("
+            << Length << ','
+            << Usage << "=(" << D3DUSAGEtoString( Usage ) << "),"
+            << Format << "=(" << D3DFORMATtoString( Format ) << "),"
+            << Pool << "=(" << D3DPOOLtoString( Pool ) << poolChanged << "),"
+            << ppIndexBuffer
+            << '[' << ((ppIndexBuffer != 0) ? *ppIndexBuffer : 0) << "],"
+            << pSharedHandle << ") = " << result << std::endl;
+    }
 
     return result;
 }
@@ -487,15 +501,17 @@ HRESULT IDirect3DDevice9Proxy::CreateRenderTarget(
     IDirect3DSurface9 **ppSurface,
     HANDLE *pSharedHandle
 ) {
-    //Log::print() << "CreateRenderTarget("
-    //    << Width << ','
-    //    << Height << ','
-    //    << Format << "=(" << D3DFORMATtoString( Format ) << "),"
-    //    << MultiSample << "=(" << D3DMULTISAMPLE_TYPEtoString( MultiSample ) <<"),"
-    //    << MultisampleQuality << ','
-    //    << Lockable << ','
-    //    << ppSurface << ','
-    //    << pSharedHandle << ")\n";
+    if (Log::verbose()) {
+        Log::print() << "CreateRenderTarget("
+            << Width << ','
+            << Height << ','
+            << Format << "=(" << D3DFORMATtoString( Format ) << "),"
+            << MultiSample << "=(" << D3DMULTISAMPLE_TYPEtoString( MultiSample ) << "),"
+            << MultisampleQuality << ','
+            << Lockable << ','
+            << ppSurface << ','
+            << pSharedHandle << ")\n";
+    }
 
     return m_device->CreateRenderTarget(
         Width, Height,
@@ -612,13 +628,15 @@ HRESULT IDirect3DDevice9Proxy::CreateOffscreenPlainSurface(
     IDirect3DSurface9 **ppSurface,
     HANDLE *pSharedHandle
 ) {
-    //Log::print() << "CreateOffscreenPlainSurface("
-    //    << Width << ','
-    //    << Height << ','
-    //    << Format << "=(" << D3DFORMATtoString( Format ) << "),"
-    //    << Pool << "=(" << D3DPOOLtoString( Pool ) << "),"
-    //    << ppSurface << ','
-    //    << pSharedHandle << ")\n";
+    if (Log::verbose()) {
+        Log::print() << "CreateOffscreenPlainSurface("
+            << Width << ','
+            << Height << ','
+            << Format << "=(" << D3DFORMATtoString( Format ) << "),"
+            << Pool << "=(" << D3DPOOLtoString( Pool ) << "),"
+            << ppSurface << ','
+            << pSharedHandle << ")\n";
+    }
 
     if ( Settings::get().forceDirect3D9Ex && (Pool == D3DPOOL_MANAGED) )
         Pool = D3DPOOL_DEFAULT;
@@ -690,7 +708,8 @@ HRESULT IDirect3DDevice9Proxy::Clear(
     float Z,
     DWORD Stencil
 ) {
-    //Log::print() << "IDirect3DDevice9::Clear(...)\n";
+    if (Log::verbose())
+        Log::print( "IDirect3DDevice9::Clear(...)\n" );
 
     if ( !Settings::get().passThrough )
         m_quad.onPreClearDX( Count, pRects, Flags, Color, Z, Stencil );
@@ -736,13 +755,15 @@ HRESULT IDirect3DDevice9Proxy::MultiplyTransform(
 
 HRESULT IDirect3DDevice9Proxy::SetViewport( CONST D3DVIEWPORT9 *pViewport )
 {
-    //Log::print() << "SetViewport: "
-    //    << pViewport->X << ','
-    //    << pViewport->Y << ' '
-    //    << pViewport->Width  << 'x'
-    //    << pViewport->Height << ' '
-    //    << pViewport->MinZ << '..'
-    //    << pViewport->MaxZ << endl;
+    if (Log::verbose()) {
+        Log::print() << "SetViewport: "
+            << pViewport->X << ','
+            << pViewport->Y << ' '
+            << pViewport->Width  << 'x'
+            << pViewport->Height << ' '
+            << pViewport->MinZ << '..'
+            << pViewport->MaxZ << endl;
+    }
 
     return m_device->SetViewport( pViewport );
 }

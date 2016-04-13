@@ -61,7 +61,6 @@ Quadifier::Quadifier(
     m_drawBuffer = 0;
     m_readBuffer = 0;
     // m_target implicit
-    m_verbose = false;
     m_stereoMode = false;
     m_clearCount = 0;
     m_clearCountPersist = 0;
@@ -79,13 +78,18 @@ Quadifier::Quadifier(
 
     // have we got stereo support?
     m_stereoAvailable = isOpenGLStereoAvailable();
+
+    // set logging level
+    // note: a few log messages will already have been output at this point
+    Log::get().setLevel( Settings::get().logLevel );
 }
 
 //-----------------------------------------------------------------------------
 
 Quadifier::~Quadifier()
 {
-    Log::print( "~Quadifier\n" );
+    if (Log::info())
+        Log::print( "~Quadifier\n" );
 
     // clear all the render targets
     for (unsigned i = 0; i < m_target.size(); ++i)
@@ -114,6 +118,8 @@ void Quadifier::onPreClearDX(
     float Z,
     DWORD Stencil
 ) {
+    if (Log::verbose()) Log::print( "onPreClearDX\n" );
+
     // is this the main display render target?
     if ( !isPresentedRenderTarget() ) return;
 
@@ -166,6 +172,8 @@ void Quadifier::onPrePresentDX(
     HWND hDestWindowOverride,
     CONST RGNDATA *pDirtyRegion
 ) {
+    if (Log::verbose()) Log::print( "onPrePresentDX\n" );
+
     // get the current render target
     IDirect3DSurface9 *renderTarget = 0;
     if ( m_device->GetRenderTarget( 0, &renderTarget ) == S_OK ) {
@@ -180,9 +188,8 @@ void Quadifier::onPrePresentDX(
         );
 
         // verbose logging
-        if ( m_verbose ) {
+        if (Log::verbose())
             Log::print() << "Presenting Render Target: " << renderTarget << endl;
-        }
     }
 
     // send frame to GL display thread
@@ -198,6 +205,8 @@ void Quadifier::onPrePresentDX(
 
 void Quadifier::onPostPresentDX()
 {
+    if (Log::verbose()) Log::print( "onPostPresentDX\n" );
+
     // remember current stereo mode
     bool oldStereo = m_stereoMode;
 
@@ -205,9 +214,12 @@ void Quadifier::onPostPresentDX()
     m_stereoMode = (m_clearCount > 1);
 
     // if stereo mode has changed, output a message to the log
-    if ( oldStereo != m_stereoMode )
-        Log::print( "Stereo " ) <<
-            (m_stereoMode ? "enabled" : "disabled") << endl;
+    if ( oldStereo != m_stereoMode ) {
+        if (Log::info()) {
+            Log::print( "Stereo " ) <<
+                (m_stereoMode ? "enabled" : "disabled") << endl;
+        }
+    }
 
     // reset clear counter
     m_clearCountPersist = m_clearCount;
@@ -221,23 +233,28 @@ void Quadifier::onPostPresentDX()
 //-----------------------------------------------------------------------------
 bool Quadifier::onCreate()
 {
-    // log some general information about the OpenGL renderer
-    Log::print( "GL Version : " ) << glGetString( GL_VERSION )  << endl;
-    Log::print( "GL Vendor  : " ) << glGetString( GL_VENDOR )   << endl;
-    Log::print( "GL Renderer: " ) << glGetString( GL_RENDERER ) << endl;
+    if (Log::info()) {
+        // log some general information about the OpenGL renderer
+        Log::print( "GL Version : " ) << glGetString( GL_VERSION ) << endl;
+        Log::print( "GL Vendor  : " ) << glGetString( GL_VENDOR ) << endl;
+        Log::print( "GL Renderer: " ) << glGetString( GL_RENDERER ) << endl;
+    }
 
     // query number of antialiasing samples
     m_samplesGL = m_window.getSamples();
-    Log::print( "GL Samples : " ) << m_samplesGL << endl;
+    if (Log::info())
+        Log::print( "GL Samples : " ) << m_samplesGL << endl;
 
     // output pixel format index
-    Log::print() << "OpenGL pixel format = " << m_window.getPixelFormat() << endl;
+    if (Log::info())
+        Log::print() << "OpenGL pixel format = " << m_window.getPixelFormat() << endl;
 
     // query OpenGL texture size
     {
         GLint textureSize = 0;
         glGetIntegerv( GL_MAX_TEXTURE_SIZE, &textureSize );
-        Log::print() << "OpenGL maximum texture size = " << textureSize << endl;
+        if (Log::info())
+            Log::print() << "OpenGL maximum texture size = " << textureSize << endl;
     }
 
     bool success = false;
@@ -245,12 +262,12 @@ bool Quadifier::onCreate()
     // use textures or renderbuffers?
     bool useTexture = Settings::get().useTexture;
 
-    if ( !glx.load() )
+    if (!glx.load())
         Log::print( "error: failed to load GL extensions\n" );
     else do {
-        Log::print( "loaded GL extensions\n" );
+        if (Log::info()) Log::print( "loaded GL extensions\n" );
 
-        Log::print( "creating GL/DX interop\n" );
+        if (Log::info()) Log::print( "creating GL/DX interop\n" );
         m_interopGLDX = glx.wglDXOpenDeviceNV( m_device );
 
         if ( m_interopGLDX == 0 ) {
@@ -262,7 +279,7 @@ bool Quadifier::onCreate()
         GLenum textureMode = ( m_samplesGL > 1 ) ?
                 GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 
-        Log::print( "generating render buffers\n" );
+        if (Log::info()) Log::print( "generating render buffers\n" );
         unsigned i=0;
         for (i=0; i<m_target.size(); ++i) {
             // are we using textures or renderbuffers?
@@ -285,7 +302,8 @@ bool Quadifier::onCreate()
             }
 
             // JDW - register ShareHandle for ATI/AMD interoperability
-            Log::print("Setting SharedHandle ") << m_target[i].shareHandle << endl;;
+            if (Log::info())
+                Log::print("Setting SharedHandle ") << m_target[i].shareHandle << endl;;
             if (glx.wglDXSetResourceShareHandleNV != 0) {
                 glx.wglDXSetResourceShareHandleNV(m_target[i].surface, m_target[i].shareHandle);
             }
@@ -294,7 +312,8 @@ bool Quadifier::onCreate()
                 break;
             }
 
-            Log::print( "registering DX object " ) << i << endl;
+            if (Log::info())
+                Log::print( "registering DX object " ) << i << endl;
             m_target[i].object = glx.wglDXRegisterObjectNV(
                 m_interopGLDX,
                 m_target[i].surface,
@@ -318,7 +337,8 @@ bool Quadifier::onCreate()
             }
 
             glx.glBindFramebuffer( GL_FRAMEBUFFER, m_target[i].frameBuffer );
-            Log::print() << "glBindFramebuffer = " << getGLErrorString() << endl;
+            if (Log::info())
+                Log::print() << "glBindFramebuffer = " << getGLErrorString() << endl;
 
             if ( useTexture ) {
                 // using GL_TEXTURE_2D
@@ -358,30 +378,33 @@ bool Quadifier::onCreate()
                     Log::print() << "Error: LockObjectsNV for renderBuffer " << i << " failed " << endl;
                 }
 
-                // this table defines the renderbuffer parameters to be listed
-                struct {
-                    GLenum name;
-                    const char *text;
-                } table[] = {
-                   { GL_RENDERBUFFER_WIDTH, "width" },
-                   { GL_RENDERBUFFER_HEIGHT, "height" },
-                   { GL_RENDERBUFFER_INTERNAL_FORMAT, "format" },
-                   { GL_RENDERBUFFER_RED_SIZE, "red" },
-                   { GL_RENDERBUFFER_GREEN_SIZE, "green" },
-                   { GL_RENDERBUFFER_BLUE_SIZE, "blue" },
-                   { GL_RENDERBUFFER_ALPHA_SIZE, "alpha" },
-                   { GL_RENDERBUFFER_DEPTH_SIZE, "depth" },
-                   { GL_RENDERBUFFER_STENCIL_SIZE, "stencil" },
-                   { 0, 0 }
-                };
-
                 glx.glBindRenderbuffer( GL_RENDERBUFFER, m_target[i].renderBuffer );
 
-                // query and log all the renderbuffer parameters
-                for (int p=0; table[p].name != 0; ++p) {
-                    GLint value = 0;
-                    glx.glGetRenderbufferParameteriv( GL_RENDERBUFFER, table[p].name, &value );
-                    Log::print( "renderBuffer." ) << table[p].text << " = " << value << endl;
+                // if we are logging informational messages
+                if (Log::info()) {
+                    // this table defines the renderbuffer parameters to be listed
+                    struct {
+                        GLenum name;
+                        const char *text;
+                    } table[] = {
+                        { GL_RENDERBUFFER_WIDTH, "width" },
+                        { GL_RENDERBUFFER_HEIGHT, "height" },
+                        { GL_RENDERBUFFER_INTERNAL_FORMAT, "format" },
+                        { GL_RENDERBUFFER_RED_SIZE, "red" },
+                        { GL_RENDERBUFFER_GREEN_SIZE, "green" },
+                        { GL_RENDERBUFFER_BLUE_SIZE, "blue" },
+                        { GL_RENDERBUFFER_ALPHA_SIZE, "alpha" },
+                        { GL_RENDERBUFFER_DEPTH_SIZE, "depth" },
+                        { GL_RENDERBUFFER_STENCIL_SIZE, "stencil" },
+                        { 0, 0 }
+                    };
+
+                    // query and log all the renderbuffer parameters
+                    for (int p = 0; table[p].name != 0; ++p) {
+                        GLint value = 0;
+                        glx.glGetRenderbufferParameteriv( GL_RENDERBUFFER, table[p].name, &value );
+                        Log::print( "renderBuffer." ) << table[p].text << " = " << value << endl;
+                    }
                 }
 
                 glx.glBindRenderbuffer( GL_RENDERBUFFER, 0 );
@@ -390,9 +413,13 @@ bool Quadifier::onCreate()
 
             // log the framebuffer status (should be GL_FRAMEBUFFER_COMPLETE)
             GLenum status = glx.glCheckFramebufferStatus(GL_FRAMEBUFFER);
-            Log::print() << "glCheckFramebufferStatus = " << GLFRAMEBUFFERSTATUStoString( status ) << endl;
-            // JDW added for clarification:
-            Log::print() << "For ATI cards this may show GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT but gets corrected later.\n";
+            if ((status != GL_FRAMEBUFFER_COMPLETE) || Log::info()) {
+                Log::print() << "glCheckFramebufferStatus = " << GLFRAMEBUFFERSTATUStoString( status ) << endl;
+                if (status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {
+                    // JDW added for clarification:
+                    Log::print() << "For ATI cards this may show GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT but gets corrected later.\n";
+                }
+            }
         }
 
         // successful only if all render buffers were created and initialised
@@ -423,27 +450,29 @@ void Quadifier::onDestroy()
         m_quadListGL = 0;
     }
 
-    Log::print( "onDestroy\n" );
+    if (Log::info()) {
+        Log::print( "onDestroy\n" );
 
-    Log::print("DX presented targets = ") << m_presentedTargets.size() << endl;
+        Log::print( "DX presented targets = " ) << m_presentedTargets.size() << endl;
 
-    Log::print("GL frames = ") << m_framesGL << endl;
-    Log::print("DX frames = ") << m_framesDX << endl;
+        Log::print( "GL frames = " ) << m_framesGL << endl;
+        Log::print( "DX frames = " ) << m_framesDX << endl;
 
-    // display a metric which indicates the ratio of DX to GL frames
-    // (in stereo mode this should tend towards 200)
-    if ( m_framesGL > 0 )
-        Log::print("DX/GL metric = ")
-            << 100 * m_framesDX / m_framesGL
-            << endl;
+        // display a metric which indicates the ratio of DX to GL frames
+        // (in stereo mode this should tend towards 200)
+        if ( m_framesGL > 0 )
+            Log::print("DX/GL metric = ")
+                << 100 * m_framesDX / m_framesGL
+                << endl;
 
-    // display the final frame rate (number of GL frames per second)
-    double elapsed = m_lastFrameTimeGL - m_firstFrameTimeGL;
-    if ( elapsed > 0.01 )
-        Log::print("Frame rate = ")
-            << setprecision(2) << fixed
-            << static_cast<double>(m_framesGL-1) / elapsed << " fps"
-            << endl;
+        // display the final frame rate (number of GL frames per second)
+        double elapsed = m_lastFrameTimeGL - m_firstFrameTimeGL;
+        if ( elapsed > 0.01 )
+            Log::print("Frame rate = ")
+                << setprecision(2) << fixed
+                << static_cast<double>(m_framesGL-1) / elapsed << " fps"
+                << endl;
+    }
 }//onDestroy
 
 //-----------------------------------------------------------------------------
@@ -556,7 +585,7 @@ void Quadifier::onPaint()
     m_frameDone.signal();
 
     // in verbose mode, log the point at which GL swap occurs
-    if (m_verbose) Log::print( "GLSWAP\n" );
+    if (Log::verbose()) Log::print( "GLSWAP\n" );
 
     // performance statistics are collected in stereo mode
     if ( m_stereoMode ) {
@@ -714,7 +743,7 @@ LRESULT CALLBACK WindowProcSource(
 
 unsigned __stdcall Quadifier::threadFunc( void *context )
 {
-    Log::print( "GL rendering thread started\n" );
+    if (Log::info()) Log::print( "GL rendering thread started\n" );
 
     Quadifier *self = reinterpret_cast<Quadifier*>( context );
 
@@ -768,13 +797,15 @@ unsigned __stdcall Quadifier::threadFunc( void *context )
     // do we want to match original number of multisamples used in DirectX?
     // if not, set it to zero
     if ( Settings::get().matchOriginalMSAA ) {
-        Log::print()
-            << "matchOriginalMSAA is ENABLED\n"
-            << "GL will attempt to use the same multisample format as DX\n";
+        if (Log::info())
+            Log::print()
+                << "matchOriginalMSAA is ENABLED\n"
+                << "GL will attempt to use the same multisample format as DX\n";
     } else {
-        Log::print()
-            << "matchOriginalMSAA is DISABLED\n"
-            << "GL is not forced to use the sample multisample format as DX\n";
+        if (Log::info())
+            Log::print()
+                << "matchOriginalMSAA is DISABLED\n"
+                << "GL is not forced to use the sample multisample format as DX\n";
 
         desiredSamples = 0;
     }
@@ -834,7 +865,7 @@ unsigned __stdcall Quadifier::threadFunc( void *context )
             }
         } while ( message.message != WM_QUIT );
 
-        Log::print( "WM_QUIT\n" );
+        if (Log::info()) Log::print( "WM_QUIT\n" );
     } else {
         Log::print( "Failed when initialising OpenGL resources: exiting\n" );
         PostMessage( self->m_sourceWindow, WM_QUIT, 0, 0 );
@@ -881,7 +912,7 @@ bool Quadifier::isPresentedRenderTarget() const
     // get the current render target
     if ( m_device->GetRenderTarget( 0, &renderTarget ) == S_OK ) {
         // if verbose logging is enabled
-        if ( m_verbose ) {
+        if ( Log::verbose() ) {
             // render target description
             D3DSURFACE_DESC desc = {};
 
@@ -922,7 +953,8 @@ void Quadifier::createResources()
             forcedSamples = window.getSamples();
             window.destroy();
         }
-        Log::print( "OpenGL forced AA samples = " ) << forcedSamples << endl;
+        if (Log::info())
+            Log::print( "OpenGL forced AA samples = " ) << forcedSamples << endl;
     }
 
     // convert number of samples to the Direct3D multisample type
@@ -932,7 +964,8 @@ void Quadifier::createResources()
         forcedSamplesDX = static_cast<D3DMULTISAMPLE_TYPE>( forcedSamples );
     }
 
-    Log::print( "Create DX render targets\n" );
+    if (Log::info())
+        Log::print( "Create DX render targets\n" );
 
     if ( m_target[0].surface != 0 ) return;
 
@@ -985,16 +1018,20 @@ void Quadifier::createResources()
         Log::print( "error: failed to get render target\n" );
     }
 
-    Log::print() << "DX viewport = "
-        << m_width << 'x' << m_height << endl;
+    if (Log::info()) {
+        Log::print() << "DX viewport = "
+            << m_width << 'x' << m_height << endl;
+    }
 
     // multisampling level to use
     D3DMULTISAMPLE_TYPE multisampleType = desc.MultiSampleType;
 
-    // this is the original number of Direct3D samples used by the source
-    Log::print( "DX multisample type = " ) << D3DMULTISAMPLE_TYPEtoString(
-        multisampleType
-    ) << endl;
+    if (Log::info()) {
+        // this is the original number of Direct3D samples used by the source
+        Log::print( "DX multisample type = " ) << D3DMULTISAMPLE_TYPEtoString(
+            multisampleType
+            ) << endl;
+    }
 
     // if the target has forced multisamples that are greater than the
     // Direct3D source, we force the source to use the same number to
@@ -1025,8 +1062,9 @@ void Quadifier::createResources()
     if ( m_device->GetDepthStencilSurface( &depthStencilSurface ) == S_OK ) {
         // get the surface description
         if ( depthStencilSurface->GetDesc( &depthStencilDesc ) == S_OK ) {
-            Log::print( "DX depth/stencil surface format: " ) <<
-                D3DFORMATtoString( depthStencilDesc.Format ) << endl;
+            if (Log::info())
+                Log::print( "DX depth/stencil surface format: " ) <<
+                    D3DFORMATtoString( depthStencilDesc.Format ) << endl;
         } else {
             Log::print( "error: failed to get depth surface description\n" );
         }
@@ -1072,7 +1110,8 @@ void Quadifier::createResources()
 
 void Quadifier::startRenderThread()
 {
-    Log::print( "starting GL rendering thread\n" );
+    if (Log::info())
+        Log::print( "starting GL rendering thread\n" );
 
     if ( m_thread != 0 ) return;
 
@@ -1088,7 +1127,8 @@ void Quadifier::startRenderThread()
         &threadId   // OUT: returns thread ID
     );
 
-    Log::print() << "thread = " << hex << (unsigned)m_thread << dec << endl;
+    if (Log::info())
+        Log::print() << "thread = " << hex << (unsigned)m_thread << dec << endl;
 }
 
 //-----------------------------------------------------------------------------

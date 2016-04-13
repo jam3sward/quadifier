@@ -171,7 +171,8 @@ static struct LoadD3D11 {
 
 IDirect3D9 * WINAPI fake_Direct3DCreate9( UINT SDKVersion )
 {
-    Log::print() << "Direct3DCreate9(" << SDKVersion << ")\n";
+    if (Log::info())
+        Log::print() << "Direct3DCreate9(" << SDKVersion << ")\n";
 
     IDirect3D9 *direct3D9 = 0;
 
@@ -385,13 +386,15 @@ HWND WINAPI fake_CreateWindowExA(
     __in_opt HINSTANCE hInstance,
     __in_opt LPVOID lpParam
 ) {
-    Log::print() << "CreateWindowExA("
-        << ((HIWORD(lpClassName)  != 0)?lpClassName:"?") << ','
-        << ((HIWORD(lpWindowName) != 0)?lpWindowName:"?") << ','
-        << X << ','
-        << Y << ' '
-        << nWidth << 'x'
-        << nHeight << ")\n";
+    if (Log::info()) {
+        Log::print() << "CreateWindowExA("
+            << ((HIWORD(lpClassName)  != 0)?lpClassName:"?") << ','
+            << ((HIWORD(lpWindowName) != 0)?lpWindowName:"?") << ','
+            << X << ','
+            << Y << ' '
+            << nWidth << 'x'
+            << nHeight << ")\n";
+    }
 
     // call the real function
     return real_CreateWindowExA(
@@ -428,13 +431,15 @@ HWND WINAPI fake_CreateWindowExW(
 ) {
     USES_CONVERSION;
 
-    Log::print() << "CreateWindowExW("
-        << ((HIWORD(lpClassName)  != 0)?W2A(lpClassName):"?") << ','
-        << ((HIWORD(lpWindowName) != 0)?W2A(lpWindowName):"?") << ','
-        << X << ','
-        << Y << ' '
-        << nWidth << 'x'
-        << nHeight << ")\n";
+    if (Log::info()) {
+        Log::print() << "CreateWindowExW("
+            << ((HIWORD( lpClassName ) != 0) ? W2A( lpClassName ) : "?") << ','
+            << ((HIWORD( lpWindowName ) != 0) ? W2A( lpWindowName ) : "?") << ','
+            << X << ','
+            << Y << ' '
+            << nWidth << 'x'
+            << nHeight << ")\n";
+    }
 
     // call the real function
     return real_CreateWindowExW(
@@ -482,7 +487,8 @@ FARPROC WINAPI fake_GetProcAddress(
 void processAttach()
 {
     Log::open( "intercept.log" );
-    Log::print( "DLL_PROCESS_ATTACH\n" );
+    if (Log::info())
+        Log::print( "DLL_PROCESS_ATTACH\n" );
     //MessageBox( 0, L"quadifier", L"debug me", MB_OK );
 
     // hook Direct3DCreate9
@@ -556,7 +562,8 @@ void processAttach()
 //-----------------------------------------------------------------------------
 
 void processDetach() {
-    Log::print( "DLL_PROCESS_DETACH" );
+    if (Log::info())
+        Log::print( "DLL_PROCESS_DETACH" );
 
     Mhook_Unhook( reinterpret_cast<PVOID*>(&real_GetProcAddress)  );
     Mhook_Unhook( reinterpret_cast<PVOID*>(&real_CreateWindowExW) );
