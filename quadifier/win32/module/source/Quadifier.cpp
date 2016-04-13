@@ -169,7 +169,7 @@ void Quadifier::onPrePresentDX(
     // get the current render target
     IDirect3DSurface9 *renderTarget = 0;
     if ( m_device->GetRenderTarget( 0, &renderTarget ) == S_OK ) {
-        // release the render target (we are only storing it's pointer as
+        // release the render target (we are only storing its pointer as
         // a hash for comparison purposes)
         renderTarget->Release();
 
