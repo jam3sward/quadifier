@@ -28,8 +28,11 @@
 //-----------------------------------------------------------------------------
 
 #include <string>
+#include "Log.h"
 
 //-----------------------------------------------------------------------------
+
+namespace hive {
 
 struct Settings {
     bool passThrough;       ///< Enable "pass through" mode
@@ -37,6 +40,7 @@ struct Settings {
     bool useTexture;        ///< Use textures (true) or renderbuffers (false)
     bool preventModeChange; ///< Prevent application from changing display mode
     bool matchOriginalMSAA; ///< Should GL use same number of samples as DX?
+    Log::Level logLevel;    ///< Logging level
 
     /// Returns the current settings
     static const Settings & get();
@@ -47,6 +51,8 @@ struct Settings {
 private:
     Settings();
 };
+
+} // namespace hive
 
 //-----------------------------------------------------------------------------
 

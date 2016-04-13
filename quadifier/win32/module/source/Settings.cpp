@@ -60,6 +60,24 @@ bool Settings::load( const std::string & fileName )
             // accept sensible values for true (anything else is false)
             return ( text == "yes" ) || ( text == "true" ) || ( text == "1" );
         }
+
+        // conert string to log level
+        Log::Level readLogLevel( std::string text ) {
+            // convert to lower case
+            std::transform( text.begin(), text.end(), text.begin(), ::tolower );
+
+            // convert text to logging level (accepts "warn" or "warning")
+            if (text.find_first_of( "error" ) == 0)
+                return Log::Level::Error;
+            else if (text.find_first_of( "warn" ) == 0)
+                return Log::Level::Warning;
+            else if (text.find_first_of( "info" ) == 0)
+                return Log::Level::Info;
+            else if (text.find_first_of( "verbose" ) == 0)
+                return Log::Level::Verbose;
+            else
+                return Log::Level::Info;
+        }
     } local;
 
     do {
@@ -87,7 +105,9 @@ bool Settings::load( const std::string & fileName )
             preventModeChange = local.readBool( value );
         else if ( key == "matchOriginalMSAA" )
             matchOriginalMSAA = local.readBool( value );
-        else {
+        else if ( key == "logLevel" ) {
+            logLevel = local.readLogLevel( value );
+        } else {
             // unrecognised keys are currently ignored
         }
 
