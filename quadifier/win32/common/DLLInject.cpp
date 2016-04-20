@@ -175,7 +175,6 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
     HANDLE process = 0;
     HANDLE thread  = 0;
     LPVOID memory  = 0;
-    unsigned memorySize = 0;
 
     bool result = false;
 
@@ -292,11 +291,11 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
         // copy the thread code into the target process
         SIZE_T numWritten = 0;
         LPVOID codeAddress = memory;
-        WriteProcessMemory(
+        if ( !WriteProcessMemory(
             process, codeAddress,
             loaderCode, codeSize,
             &numWritten
-        );
+        ) ) break;
         if ( numWritten != codeSize ) break;
 
         // calculate address where data should be written in the remote process
@@ -321,12 +320,14 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
             /// returning true for success, false in case of failure
             bool writeProcessMemory() {
                 SIZE_T numWritten = 0;
-                WriteProcessMemory(
+                if ( WriteProcessMemory(
                     m_process, m_baseAddress,
                     m_buffer, m_size,
                     &numWritten
-                );
-                return ( numWritten == m_size );
+                ) )
+                    return ( numWritten == m_size );
+                else
+                    return false;
             }
         
         private:
@@ -397,22 +398,23 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
             if ( threadStatus != 0 ) break;
         }
 
-        // wait for thread to terminate
-        WaitForSingleObject( thread, INFINITE );
+        if (thread != 0) {
+            // wait for thread to terminate
+            WaitForSingleObject( thread, INFINITE );
 
-        // get the thread exit code
-        DWORD exitCode = 0;
-        GetExitCodeThread( thread, &exitCode );
+            // success depends on thread exit code
+            DWORD exitCode = 0;
+            result = GetExitCodeThread( thread, &exitCode ) && (exitCode == ERROR_SUCCESS);
+        } else
+            result = false;
 
-        // success depends on thread exit code
-        result = (exitCode == ERROR_SUCCESS);
     } while (0,0);
 
     // close the thread handle
     if ( thread != 0 ) CloseHandle( thread );
 
     // free the memory used in the remote process
-    if ( memory != 0 ) VirtualFreeEx( process, memory, memorySize, MEM_RELEASE );
+    if ( memory != 0 ) VirtualFreeEx( process, memory, 0, MEM_RELEASE );
 
     // close the remote process handle
     if ( process != 0 ) CloseHandle( process );
