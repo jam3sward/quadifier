@@ -59,7 +59,7 @@ class ProjectionScreen {
 		if ( label != null ) object.name += " " + label;
 		
 		// get the camera
-		var camera = object.camera;
+		var camera = object.GetComponent.<Camera>();
 		
 		// set the camera transformation
 		camera.transform.position = Vector3( 0, 0, 0 );
