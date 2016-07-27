@@ -52,6 +52,8 @@ std::string getGLErrorString();
 
 std::string GLFRAMEBUFFERSTATUStoString( GLenum status );
 
+std::string GLDRAWBUFFERtoString( GLenum buffer );
+
 //-----------------------------------------------------------------------------
 
 #endif//DebugUtil_h

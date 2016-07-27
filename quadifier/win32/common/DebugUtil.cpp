@@ -386,3 +386,41 @@ std::string GLFRAMEBUFFERSTATUStoString( GLenum status ) {
 }
 
 //-----------------------------------------------------------------------------
+
+std::string GLDRAWBUFFERtoString( GLenum buffer ) {
+    switch (buffer) {
+    case GL_NONE:
+        return "GL_NONE";
+    case GL_FRONT_LEFT:
+        return "GL_FRONT_LEFT";
+    case GL_FRONT_RIGHT:
+        return "GL_FRONT_RIGHT";
+    case GL_BACK_LEFT:
+        return "GL_BACK_LEFT";
+    case GL_BACK_RIGHT:
+        return "GL_BACK_RIGHT";
+    case GL_FRONT:
+        return "GL_FRONT";
+    case GL_BACK:
+        return "GL_BACK";
+    case GL_LEFT:
+        return "GL_LEFT";
+    case GL_RIGHT:
+        return "GL_RIGHT";
+    case GL_FRONT_AND_BACK:
+        return "GL_FRONT_AND_BACK";
+    default:
+        if (buffer >= GL_AUX0) {
+            GLint numBuffers( 0 );
+            glGetIntegerv( GL_AUX_BUFFERS, &numBuffers );
+            if (buffer < static_cast<GLenum>(numBuffers)) {
+                stringstream text( "GL_AUX" );
+                text << (buffer - GL_AUX0);
+                return text.str();
+            }
+        }
+        return "";
+    }
+}
+
+//-----------------------------------------------------------------------------
