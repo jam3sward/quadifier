@@ -1,4 +1,5 @@
 #include "IDirect3DDevice9Proxy.h"
+#include <sstream>
 #include "Log.h"
 #include "DebugUtil.h"
 #include "Settings.h"
@@ -756,13 +757,22 @@ HRESULT IDirect3DDevice9Proxy::MultiplyTransform(
 HRESULT IDirect3DDevice9Proxy::SetViewport( CONST D3DVIEWPORT9 *pViewport )
 {
     if (Log::verbose()) {
-        Log::print() << "SetViewport: "
+        std::stringstream text;
+        text << "SetViewport: "
             << pViewport->X << ','
             << pViewport->Y << ' '
             << pViewport->Width  << 'x'
             << pViewport->Height << ' '
             << pViewport->MinZ << '..'
             << pViewport->MaxZ << endl;
+        Log::print( text.str() );
+    }
+
+    if (!Settings::get().passThrough) {
+        // call handler: if it returns false, bypass the real D3D function by
+        // returning D3D_OK
+        if (!m_quad.onPreSetViewportDX( pViewport ))
+            return D3D_OK;
     }
 
     return m_device->SetViewport( pViewport );

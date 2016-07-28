@@ -1,6 +1,7 @@
 #include <process.h>
 #include <time.h>
 #include <iomanip>
+#include <sstream>
 #include "Quadifier.h"
 #include "Log.h"
 #include "Settings.h"
@@ -130,29 +131,14 @@ void Quadifier::onPreClearDX(
         createResources();
     }
 
-    if ( m_stereoMode &&
-        (m_clearCountPersist > 0) &&
-        (m_clearCount == (m_clearCountPersist/2))
-    )
-        sendFrame( GL_BACK_LEFT );
+    //if ( m_stereoMode &&
+    //    (m_clearCountPersist > 0) &&
+    //    (m_clearCount == (m_clearCountPersist/2))
+    //)
+    //    sendFrame( GL_BACK_LEFT );
 
-    // save the current viewport
-    D3DVIEWPORT9 viewport;
-    bool savedViewport = (m_device->GetViewport( &viewport ) == D3D_OK);
-
-    // set the render target to the surface
-    // any subsequent drawing (by the Direct3D application) will be rendered
-    // into this surface
-    // note: setting a new render target causes the viewport to be set to the
-    // full size of the new render target
-	if (m_device->SetRenderTarget(0, m_target[m_drawBuffer].surface) != D3D_OK) {
-		Log::print() << "Error Setting Render Target\n ";
-		exit(1);
-	}
-
-    // restore the viewport
-    if ( savedViewport )
-        m_device->SetViewport( &viewport );
+    // start capturing DX drawing
+    beginCapture();
 
     // count number of clears per frame
     ++m_clearCount;
@@ -193,11 +179,12 @@ void Quadifier::onPrePresentDX(
     }
 
     // send frame to GL display thread
-    // if there has been more than one clear, this will be the right eye
+    // if we are in stereo mode, this will be the right eye
     // channel of a stereo pair, otherwise we are rendering 2D
-    sendFrame( (m_clearCount > 1) ? GL_BACK_RIGHT : GL_BACK );
+    endCapture( m_stereoMode ? GL_BACK_RIGHT : GL_BACK );
 
     // signal that a new frame has been rendered
+    if (Log::verbose()) Log::print( "sending new frame notification\n" );
     SendNotifyMessage( m_window.getHWND(), WM_USER_NEWFRAME, 0, 0 );
 }//onPrePresentDX
 
@@ -207,19 +194,19 @@ void Quadifier::onPostPresentDX()
 {
     if (Log::verbose()) Log::print( "onPostPresentDX\n" );
 
-    // remember current stereo mode
-    bool oldStereo = m_stereoMode;
+    //// remember current stereo mode
+    //bool oldStereo = m_stereoMode;
 
-    // enable stereo mode if there are several clears per frame
-    m_stereoMode = (m_clearCount > 1);
+    //// enable stereo mode if there are several clears per frame
+    //m_stereoMode = (m_clearCount > 1);
 
-    // if stereo mode has changed, output a message to the log
-    if ( oldStereo != m_stereoMode ) {
-        if (Log::info()) {
-            Log::print( "Stereo " ) <<
-                (m_stereoMode ? "enabled" : "disabled") << endl;
-        }
-    }
+    //// if stereo mode has changed, output a message to the log
+    //if ( oldStereo != m_stereoMode ) {
+    //    if (Log::info()) {
+    //        Log::print( "Stereo " ) <<
+    //            (m_stereoMode ? "enabled" : "disabled") << endl;
+    //    }
+    //}
 
     // reset clear counter
     m_clearCountPersist = m_clearCount;
@@ -228,9 +215,30 @@ void Quadifier::onPostPresentDX()
     // wait until the frame has been rendered out, to keep the OpenGL and
     // Direct3D threads synchronised (after a timeout we return anyway)
     m_frameDone.wait( 1000 );
-}//postPresent
+}//onPostPresentDX
 
 //-----------------------------------------------------------------------------
+
+bool Quadifier::onPreSetViewportDX( CONST D3DVIEWPORT9 *pViewport )
+{
+    if (pViewport == nullptr) return true;
+
+    // when we see SetViewport with a rectangle of (1,*,2,3) this is our
+    // signal from the Quadifier script that right eye rendering has started
+    if ( (pViewport->X      == 1) &&
+         (pViewport->Width  == 2) &&
+         (pViewport->Height == 3)
+    ) {
+        // call the handler to switch the stereo capture buffer
+        onStereoSignal();
+    }
+
+    // return true to pass on the SetViewport call to Direct3D
+    return true;
+}//onPreSetViewportDX
+
+//-----------------------------------------------------------------------------
+
 bool Quadifier::onCreate()
 {
     if (Log::info()) {
@@ -498,12 +506,19 @@ void Quadifier::onPaint()
     }
 
     // for each eye
+    if (Log::verbose()) Log::print( "GL: rendering stereo frame\n" );
     for (int eye=0; eye<2; ++eye) {
         // get the GL draw buffer identifier for the last rendered frame
         // (i.e. the DX surface we are reading from)
         GLuint drawBuffer = m_target[m_readBuffer].drawBuffer;
 
         // select the GL draw buffer (GL_BACK or GL_BACK_LEFT or GL_BACK_RIGHT)
+        if (Log::verbose()) {
+            stringstream text;
+            text << "GL: render " << m_readBuffer << " to "
+                 << GLDRAWBUFFERtoString(drawBuffer) << endl;
+            Log::print( text.str() );
+        }
         glDrawBuffer( drawBuffer );
 
         // lock the shared DX/GL render target
@@ -565,7 +580,7 @@ void Quadifier::onPaint()
                 &m_target[m_readBuffer].object
             );
         } else
-            Log::print() << "unable to lock DX target on paint\n";
+            Log::print( "unable to lock DX target on paint\n" );
 
         // pick next read buffer
         m_readBuffer = (m_readBuffer + 1) % m_target.size();
@@ -615,6 +630,24 @@ void Quadifier::onResize( UINT type, int w, int h )
 }
 
 //-----------------------------------------------------------------------------
+
+void Quadifier::onStereoSignal()
+{
+    Log::print( "stereo signal" ) << endl;
+
+    // enable stereo mode and print a message to the log
+    if ( !m_stereoMode ) {
+        m_stereoMode = true;
+        if ( Log::info() )
+            Log::print( "Stereo enabled" ) << endl;
+    }
+
+    // end capturing and send the left stereo frame
+    endCapture( GL_BACK_LEFT );
+
+    // begin capturing the right stereo frame
+    beginCapture();
+}
 
 void Quadifier::onIdle()
 {
@@ -693,8 +726,13 @@ LRESULT CALLBACK Quadifier::windowProc(
         return 0;
 
     case WM_PAINT:
-        onPaint();
-        break;
+        {
+            PAINTSTRUCT paintStruct = {};
+            (void)BeginPaint( hWnd, &paintStruct );
+            onPaint();
+            EndPaint( hWnd, &paintStruct );
+        }
+        return 0L;
 
     case WM_SIZE:
         onResize( static_cast<UINT>(wParam), LOWORD(lParam), HIWORD(lParam) );
@@ -934,9 +972,50 @@ double Quadifier::getTime() const {
 
 //-----------------------------------------------------------------------------
 
-void Quadifier::sendFrame( GLuint drawBuffer )
-{
+void Quadifier::beginCapture() {
+    if (Log::verbose()) Log::print( "beginCapture\n" );
+
+    // save the current viewport
+    D3DVIEWPORT9 viewport = {};
+    bool savedViewport = (m_device->GetViewport( &viewport ) == D3D_OK);
+
+    // display render target parameters
+    if (Log::verbose()) {
+        stringstream text;
+        text << "SetRenderTarget("
+            << 0 << ','
+            << m_target[m_drawBuffer].surface << ") "
+            << "(drawBuffer==" << m_drawBuffer << ")\n";
+        Log::print( text.str() );
+    }
+
+    // set the render target to the surface
+    // any subsequent drawing (by the Direct3D application) will be rendered
+    // into this surface
+    // note: setting a new render target causes the viewport to be set to the
+    // full size of the new render target
+    if (m_device->SetRenderTarget( 0, m_target[m_drawBuffer].surface ) != D3D_OK) {
+        Log::print( "Error Setting Render Target\n " );
+        exit( 1 );
+    }
+
+    // restore the viewport
+    if (savedViewport)
+        m_device->SetViewport( &viewport );
+}//beginCapture
+
+//-----------------------------------------------------------------------------
+
+void Quadifier::endCapture( GLuint drawBuffer ) {
+    if (Log::verbose()) {
+        std::stringstream text;
+        text << "endCapture " << m_drawBuffer << " to " << GLDRAWBUFFERtoString( drawBuffer ) << endl;
+        Log::print( text.str() );
+    }
+
     // set the OpenGL draw buffer destination
+    // the application has already rendered into this buffer, and here we are
+    // just labelling the buffer with left/right/back as appropriate
     m_target[m_drawBuffer].drawBuffer = drawBuffer;
 
     // select next draw buffer
@@ -944,7 +1023,7 @@ void Quadifier::sendFrame( GLuint drawBuffer )
 
     // count DX frames
     if ( m_stereoMode ) ++m_framesDX;
-}//sendFrame
+}//endCapture
 
 //-----------------------------------------------------------------------------
 

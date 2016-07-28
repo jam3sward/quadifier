@@ -79,6 +79,9 @@ public:
     /// Called immediately after D3D Present
     void onPostPresentDX();
 
+    /// Called immediately before D3D SetViewport
+    bool onPreSetViewportDX( CONST D3DVIEWPORT9 *pViewport );
+
 private:
     /// Create D3D resources (render targets)
     void createResources();
@@ -97,6 +100,10 @@ private:
     
     /// Called when OpenGL window is resized
     void onResize( UINT type, int w, int h );
+
+    /// Called when stereo signal is received from Unity script, which tells
+    /// us that the right eye rendering pass has started
+    void onStereoSignal();
 
     /// Called to perform idle processing
     void onIdle();
@@ -124,11 +131,13 @@ private:
     /// Return the wall clock time in seconds
     double getTime() const;
 
-    /**
-     * Send the last rendered frame from DX to GL and swap the render
-     * targets ready for next frame.
-     */
-    void sendFrame( GLuint drawBuffer );
+    /// Begin capturing a DirectX frame
+    void beginCapture();
+
+    /// Finish capturing a DirectX frame, request rendering to the
+    /// specified OpenGL draw buffer, and swap the render targets
+    /// ready for the next frame
+    void endCapture( GLuint drawBuffer );
 
     /**
      * Returns true if the current render target has ever been presented

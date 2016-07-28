@@ -217,22 +217,67 @@ function setupScreensForCAVE() {
 
 //-----------------------------------------------------------------------------
 
+// creates fake camera: used to signal rendering state to the DLL
+function createFakeCamera( label :String ) {
+    // create a new game object in Unity
+    var object = new GameObject();
+    object.AddComponent( Camera );
+	
+    // set the object name
+    object.name = "Camera (" + this.name + ")";
+    if ( label != null ) object.name += " " + label;
+	
+    // get the camera
+    var camera = object.GetComponent.<Camera>();
+
+    // set the camera transformation
+    camera.transform.position = Vector3( 0, 0, 1 );
+    camera.transform.LookAt( Vector3(0,0,0), Vector3(0,1,0) );
+	
+    // set the camera viewport on screen: these are magic values
+    // the DLL looks for (1,2,3) in (x,width,height) which signals that
+    // we finished rendering the left images and are about to render right
+    camera.pixelRect = Rect(1,0,2,3);
+
+    // disable clear
+    camera.clearFlags = CameraClearFlags.Nothing;
+	
+    // return the camera
+    return camera;
+}
+
+//-----------------------------------------------------------------------------
+
 // initialise the camera rig for each screen
 function setupCameras() {
 	// render our cameras after the main camera, and render the left channel
 	// cameras before the right channel cameras
-	var cameraDepthLeft  = Camera.main.depth + 1;
-	var cameraDepthRight = cameraDepthLeft + 1;
+    // the fake camera in between is used to signal the DLL when right eye
+    // rendering has started
+    var cameraDepthLeft  = Camera.main.depth + 1;
+    var cameraDepthFake  = cameraDepthLeft + 1;
+	var cameraDepthRight = cameraDepthFake + 1;
+
+    // left camera clear flags depend on the main camera setting, and the
+    // right camera has clear disabled (it will draw over the left camera)
+	var cameraClearFlagsLeft = Camera.main.clearFlags;
+	var cameraClearFlagsRight = CameraClearFlags.Nothing;
 	
 	// disable the main camera (we only use cameras created from script)
-	Camera.main.enabled = false;	
+	Camera.main.enabled = false;
+
+    // create fake camera
+	var fakeCamera = createFakeCamera("fake");
+	fakeCamera.depth = cameraDepthFake;
 	
 	// for each screen, create the corresponding camera
 	for ( var screen in settings.screens ) {
 		// create camera pair
-		var rig = new CameraRig( screen );
+	    var rig = new CameraRig( screen );
 		rig.left.depth  = cameraDepthLeft;
+		rig.left.clearFlags = cameraClearFlagsLeft;
 		rig.right.depth = cameraDepthRight;
+		rig.right.clearFlags = cameraClearFlagsRight;
 		cameras.Add( rig );
 		
 		// set up temporary initial eye positions, assuming that the X axis
@@ -271,7 +316,10 @@ function trackerDataCallback( data :TrackerData ) {
 // called at wake up
 function Awake () {
 	// render as fast as possible
-	Application.targetFrameRate = -1;
+    Application.targetFrameRate = -1;
+
+    // prevent Unity from pausing when it loses focus
+    Application.runInBackground = true;
 }
 
 //-----------------------------------------------------------------------------
