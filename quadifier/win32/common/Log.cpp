@@ -1,4 +1,6 @@
 #include "Log.h"
+#include <thread>
+#include <mutex>
 #include <time.h>
 
 using namespace hive;
@@ -102,6 +104,9 @@ bool Log::verbose()
 
 std::ostream & Log::print( const std::string & text )
 {
+    static std::mutex mutex;
+    std::lock_guard<std::mutex> lock( mutex );
+
     unsigned timeStamp = static_cast<unsigned>(
         1000.0 *
         static_cast<double>( clock() ) / static_cast<double>( CLOCKS_PER_SEC )
