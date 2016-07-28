@@ -104,6 +104,9 @@ private:
     /// Request a redraw
     void redraw();
 
+    /// Draw a small indicator to show left/right stereo channels
+    void drawStereoIndicator();
+
 public:
     /// The WIN32 WindowProc for the OpenGL window
     LRESULT CALLBACK windowProc(

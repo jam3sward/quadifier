@@ -578,6 +578,10 @@ void Quadifier::onPaint()
     // restore OpenGL state
     glPopAttrib();
 
+    // draw the left/right stereo channel indicator
+    if ( Settings::get().stereoIndicator )
+        drawStereoIndicator();
+
     // swap the buffers
     m_window.swapBuffers();
 
@@ -624,6 +628,52 @@ void Quadifier::redraw()
     m_window.invalidate();
     m_window.update();
 }
+
+//-----------------------------------------------------------------------------
+
+void Quadifier::drawStereoIndicator()
+{
+    const int size = 32;
+
+    GLint viewport[4] = {};
+    glGetIntegerv( GL_VIEWPORT, viewport );
+
+    // save OpenGL state
+    glPushAttrib( GL_ENABLE_BIT | GL_CURRENT_BIT | GL_TRANSFORM_BIT );
+
+        glMatrixMode( GL_PROJECTION );
+        glPushMatrix();
+        glLoadIdentity();
+        glOrtho(
+            0.0, static_cast<double>(viewport[2]),
+            0.0, static_cast<double>(viewport[3]),
+            -1.0, 1.0
+        );
+
+        glMatrixMode( GL_MODELVIEW );
+        glPushMatrix();
+        glLoadIdentity();
+
+        glEnable( GL_COLOR_MATERIAL );
+
+        glDrawBuffer( GL_BACK_LEFT );
+        glColor3f( 0.f, 0.f, 1.f );
+        glRecti( 0, 0, size, size );
+
+        glDrawBuffer( GL_BACK_RIGHT );
+        glColor3f( 1.f, 0.f, 0.f );
+        glRecti( 0, 0, size, size );
+
+        // restore modelview matrix
+        glPopMatrix();
+
+        // restore projection matrix
+        glMatrixMode( GL_PROJECTION );
+        glPopMatrix();
+
+    // restore OpenGL state
+    glPopAttrib();
+}//drawStereoIndicator
 
 //-----------------------------------------------------------------------------
 

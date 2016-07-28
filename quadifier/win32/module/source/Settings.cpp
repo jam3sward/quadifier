@@ -105,6 +105,8 @@ bool Settings::load( const std::string & fileName )
             preventModeChange = local.readBool( value );
         else if ( key == "matchOriginalMSAA" )
             matchOriginalMSAA = local.readBool( value );
+        else if ( key == "stereoIndicator" )
+            stereoIndicator = local.readBool( value );
         else if ( key == "logLevel" ) {
             logLevel = local.readLogLevel( value );
         } else {
@@ -126,7 +128,8 @@ Settings::Settings() :
     forceDirect3D9Ex( false ),
     useTexture( false ),
     preventModeChange( true ),
-    matchOriginalMSAA( true )
+    matchOriginalMSAA( true ),
+    stereoIndicator( false )
 {
     // initialise OS version info structure
     OSVERSIONINFO info = {};
