@@ -633,7 +633,7 @@ void Quadifier::onResize( UINT type, int w, int h )
 
 void Quadifier::onStereoSignal()
 {
-    Log::print( "stereo signal" ) << endl;
+    if (Log::verbose()) Log::print( "stereo signal\n" );
 
     // enable stereo mode and print a message to the log
     if ( !m_stereoMode ) {
