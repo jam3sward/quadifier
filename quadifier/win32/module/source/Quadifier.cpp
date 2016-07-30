@@ -719,11 +719,11 @@ LRESULT CALLBACK Quadifier::windowProc(
     switch (uMsg) {
     case WM_DESTROY:
         onDestroy();
-        break;
+        return 0L;
 
     case WM_USER_NEWFRAME:
         redraw();
-        return 0;
+        return 0L;
 
     case WM_PAINT:
         {
@@ -736,7 +736,7 @@ LRESULT CALLBACK Quadifier::windowProc(
 
     case WM_SIZE:
         onResize( static_cast<UINT>(wParam), LOWORD(lParam), HIWORD(lParam) );
-        break;
+        return 0L;
 
     // forward all these messages to the source window
     case WM_CLOSE:
@@ -755,7 +755,7 @@ LRESULT CALLBACK Quadifier::windowProc(
     case WM_MBUTTONUP:
     case WM_MBUTTONDBLCLK:
         PostMessage( m_sourceWindow, uMsg, wParam, lParam );
-        return 0;
+        return 0L;
     }
 
     return DefWindowProc( hWnd, uMsg, wParam, lParam );
