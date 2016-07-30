@@ -3,8 +3,10 @@
 #include <GL/glext.h>
 #include <GL/wglext.h>
 #include <tchar.h>
+#include "Defines.h"
 
 using namespace std;
+using namespace hive;
 
 //-----------------------------------------------------------------------------
 //
@@ -178,7 +180,7 @@ bool GLWindow::create(
             pixelFormat = 0;
             break;
         }
-    } while (0,0);
+    } while (false_value);
 
     // delete temporary OpenGL context
     if ( glcontext != 0 ) {
@@ -246,7 +248,7 @@ bool GLWindow::create(
 
         // success
         return true;
-    } while (0,0);
+    } while (false_value);
 
     // something failed, and we need to clean up
 

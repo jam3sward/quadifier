@@ -75,7 +75,8 @@ std::string GUIDtoString( const GUID & guid )
 
     // convert GUID to wide string in hex format
     OLECHAR *wide;
-    StringFromCLSID( guid, &wide );
+    if (StringFromCLSID( guid, &wide ) != S_OK)
+        return "";
 
     // convert wide string to string
     string text( W2A(wide) );

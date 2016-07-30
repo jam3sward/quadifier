@@ -6,6 +6,7 @@
 #include <Tlhelp32.h>
 #include <windows.h>
 #include <VersionHelpers.h>
+#include "Defines.h"
 #include "NtCreateThreadEx.h"
 
 //-----------------------------------------------------------------------------
@@ -35,6 +36,7 @@
 //-----------------------------------------------------------------------------
 
 using namespace std;
+using namespace hive;
 
 //-----------------------------------------------------------------------------
 
@@ -408,7 +410,7 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
         } else
             result = false;
 
-    } while (0,0);
+    } while (false_value);
 
     // close the thread handle
     if ( thread != 0 ) CloseHandle( thread );
