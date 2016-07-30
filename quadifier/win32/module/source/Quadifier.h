@@ -198,7 +198,7 @@ private:
         }
     };
 
-    std::tr1::array<Target,3> m_target; ///< DX/GL targets for rendering
+    std::array<Target,3> m_target; ///< DX/GL targets for rendering
 
     bool     m_stereoMode;          ///< Stereo mode enable/disable
     bool     m_stereoAvailable;     ///< Is quad-buffer stereo available?

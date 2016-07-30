@@ -27,11 +27,7 @@
 //
 //-----------------------------------------------------------------------------
 
-#if defined(__GNUC__)
-#include <tr1/memory>
-#else
 #include <memory>
-#endif
 
 //-----------------------------------------------------------------------------
 
@@ -94,7 +90,7 @@ private:
     struct Context;
 
     /// Private implementation
-    std::tr1::shared_ptr<Context> self;
+    std::shared_ptr<Context> self;
 };
 
 //-----------------------------------------------------------------------------
