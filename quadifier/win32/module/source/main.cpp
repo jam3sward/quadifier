@@ -585,7 +585,7 @@ void processDetach() {
 BOOL WINAPI DllMain(
     HINSTANCE instance,
     DWORD reason,
-    LPVOID reserved
+    LPVOID /*reserved*/
 ) {
     switch (reason) { 
     case DLL_PROCESS_ATTACH:

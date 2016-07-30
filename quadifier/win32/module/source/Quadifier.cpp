@@ -112,12 +112,12 @@ void Quadifier::onCreateDX()
 //-----------------------------------------------------------------------------
 
 void Quadifier::onPreClearDX(
-    DWORD Count,
-    CONST D3DRECT *pRects,
-    DWORD Flags,
-    D3DCOLOR Color,
-    float Z,
-    DWORD Stencil
+    DWORD /*Count*/,
+    CONST D3DRECT* /*pRects*/,
+    DWORD /*Flags*/,
+    D3DCOLOR /*Color*/,
+    float /*Z*/,
+    DWORD /*Stencil*/
 ) {
     if (Log::verbose()) Log::print( "onPreClearDX\n" );
 
@@ -153,10 +153,10 @@ void Quadifier::onPostClearDX()
 //-----------------------------------------------------------------------------
 
 void Quadifier::onPrePresentDX(
-    CONST RECT *pSourceRect,
-    CONST RECT *pDestRect,
-    HWND hDestWindowOverride,
-    CONST RGNDATA *pDirtyRegion
+    CONST RECT * /*pSourceRect*/,
+    CONST RECT * /*pDestRect*/,
+    HWND /*hDestWindowOverride*/,
+    CONST RGNDATA * /*pDirtyRegion*/
 ) {
     if (Log::verbose()) Log::print( "onPrePresentDX\n" );
 
@@ -621,7 +621,7 @@ void Quadifier::onPaint()
 
 //-----------------------------------------------------------------------------
 
-void Quadifier::onResize( UINT type, int w, int h )
+void Quadifier::onResize( UINT /*type*/, int w, int h )
 {
     glViewport( 0, 0, w, h );
     m_width  = w;
@@ -880,7 +880,7 @@ unsigned __stdcall Quadifier::threadFunc( void *context )
     attributes[WGL_STENCIL_BITS_ARB] = 0;
 
     // number of desired anti-alias samples to match DirectX
-    int desiredSamples = static_cast<int>(self->m_samplesDX);
+    unsigned desiredSamples = self->m_samplesDX;
 
     // do we want to match original number of multisamples used in DirectX?
     // if not, set it to zero
@@ -932,9 +932,6 @@ unsigned __stdcall Quadifier::threadFunc( void *context )
             << "This may cause wglDXRegisterObjectNV to fail.\n"
             << "Please check if anti-aliasing is forced off in the driver settings.\n";
     }
-
-    // should we use stereo?
-    bool useStereo = self->m_stereoAvailable;
 
     // call onCreate to carry out OpenGL setup
     if ( self->onCreate() ) {
