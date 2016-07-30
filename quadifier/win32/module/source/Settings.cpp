@@ -80,7 +80,7 @@ bool Settings::load( const std::string & fileName )
         }
     } local;
 
-    do {
+    for (;;) {
         // read key
         string key;
         input >> ws >> key;
@@ -112,8 +112,7 @@ bool Settings::load( const std::string & fileName )
         } else {
             // unrecognised keys are currently ignored
         }
-
-    } while (true);
+    }
 
     // close the file
     input.close();

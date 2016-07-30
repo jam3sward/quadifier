@@ -220,6 +220,7 @@
     <ClInclude Include="..\..\common\CriticalSection.h" />
     <ClInclude Include="..\..\common\Event.h" />
     <ClInclude Include="..\common\DebugUtil.h" />
+    <ClInclude Include="..\common\Defines.h" />
     <ClInclude Include="..\common\GLWindow.h" />
     <ClInclude Include="..\common\Log.h" />
     <ClInclude Include="..\common\StereoUtil.h" />

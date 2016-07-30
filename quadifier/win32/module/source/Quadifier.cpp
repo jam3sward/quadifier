@@ -2,6 +2,7 @@
 #include <time.h>
 #include <iomanip>
 #include <sstream>
+#include "Defines.h"
 #include "Quadifier.h"
 #include "Log.h"
 #include "Settings.h"
@@ -432,7 +433,7 @@ bool Quadifier::onCreate()
 
         // successful only if all render buffers were created and initialised
         success = ( i == m_target.size() );
-    } while (0);
+    } while (false_value);
 
     // default OpenGL settings
     glEnable( GL_COLOR_MATERIAL );
