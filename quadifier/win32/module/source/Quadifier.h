@@ -34,7 +34,6 @@
 #include <array>
 #include <set>
 #include "Event.h"
-#include "CriticalSection.h"
 #include "Extensions.h"
 #include "GLWindow.h"
 

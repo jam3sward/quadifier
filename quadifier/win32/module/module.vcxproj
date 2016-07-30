@@ -190,7 +190,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\common\CriticalSection.cpp" />
     <ClCompile Include="..\..\common\Event.cpp" />
     <ClCompile Include="..\common\DebugUtil.cpp" />
     <ClCompile Include="..\common\GLWindow.cpp" />
