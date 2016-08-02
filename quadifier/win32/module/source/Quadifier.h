@@ -201,8 +201,6 @@ private:
 
     bool     m_stereoMode;          ///< Stereo mode enable/disable
     bool     m_stereoAvailable;     ///< Is quad-buffer stereo available?
-    unsigned m_clearCount;          ///< Number of clears per frame
-    unsigned m_clearCountPersist;   ///< Persistent number of clears
 
     double   m_firstFrameTimeGL;    ///< time-stamp of first GL frame
     double   m_lastFrameTimeGL;     ///< time-stamp of last GL frame

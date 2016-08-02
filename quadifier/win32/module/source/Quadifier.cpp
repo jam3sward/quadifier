@@ -64,8 +64,6 @@ Quadifier::Quadifier(
     m_readBuffer = 0;
     // m_target implicit
     m_stereoMode = false;
-    m_clearCount = 0;
-    m_clearCountPersist = 0;
     m_firstFrameTimeGL = 0.0;
     m_lastFrameTimeGL = 0.0;
     m_quadListGL = 0;
@@ -132,17 +130,8 @@ void Quadifier::onPreClearDX(
         createResources();
     }
 
-    //if ( m_stereoMode &&
-    //    (m_clearCountPersist > 0) &&
-    //    (m_clearCount == (m_clearCountPersist/2))
-    //)
-    //    sendFrame( GL_BACK_LEFT );
-
     // start capturing DX drawing
     beginCapture();
-
-    // count number of clears per frame
-    ++m_clearCount;
 }
 
 //-----------------------------------------------------------------------------
@@ -194,24 +183,6 @@ void Quadifier::onPrePresentDX(
 void Quadifier::onPostPresentDX()
 {
     if (Log::verbose()) Log::print( "onPostPresentDX\n" );
-
-    //// remember current stereo mode
-    //bool oldStereo = m_stereoMode;
-
-    //// enable stereo mode if there are several clears per frame
-    //m_stereoMode = (m_clearCount > 1);
-
-    //// if stereo mode has changed, output a message to the log
-    //if ( oldStereo != m_stereoMode ) {
-    //    if (Log::info()) {
-    //        Log::print( "Stereo " ) <<
-    //            (m_stereoMode ? "enabled" : "disabled") << endl;
-    //    }
-    //}
-
-    // reset clear counter
-    m_clearCountPersist = m_clearCount;
-    m_clearCount = 0;
 
     // wait until the frame has been rendered out, to keep the OpenGL and
     // Direct3D threads synchronised (after a timeout we return anyway)
