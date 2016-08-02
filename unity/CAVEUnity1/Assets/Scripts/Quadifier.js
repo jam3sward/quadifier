@@ -259,9 +259,9 @@ function setupCameras() {
 	var cameraDepthRight = cameraDepthFake + 1;
 
     // left camera clear flags depend on the main camera setting, and the
-    // right camera has clear disabled (it will draw over the left camera)
+    // right camera only clears depth buffer (it will draw over the left camera)
 	var cameraClearFlagsLeft = Camera.main.clearFlags;
-	var cameraClearFlagsRight = CameraClearFlags.Nothing;
+	var cameraClearFlagsRight = CameraClearFlags.Depth;
 	
 	// disable the main camera (we only use cameras created from script)
 	Camera.main.enabled = false;
