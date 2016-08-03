@@ -373,8 +373,12 @@ HRESULT IDirect3DDevice9Proxy::CreateVolumeTexture(
     IDirect3DVolumeTexture9 **ppVolumeTexture,
     HANDLE *pSharedHandle
 ) {
-    if ( Settings::get().forceDirect3D9Ex && (Pool == D3DPOOL_MANAGED) )
+    if ( Settings::get().forceDirect3D9Ex && (Pool == D3DPOOL_MANAGED) ) {
+        // replace D3DPOOL_MANAGED with D3DPOOL_DEFAULT
         Pool = D3DPOOL_DEFAULT;
+        // set D3DUSAGE_DYNAMIC so that texture can be locked
+        Usage |= D3DUSAGE_DYNAMIC;
+    }
 
     return m_device->CreateVolumeTexture(
         Width, Height, Depth,
@@ -398,8 +402,13 @@ HRESULT IDirect3DDevice9Proxy::CreateCubeTexture(
     IDirect3DCubeTexture9 **ppCubeTexture,
     HANDLE *pSharedHandle
 ) {
-    if ( Settings::get().forceDirect3D9Ex && (Pool == D3DPOOL_MANAGED) )
+    if ( Settings::get().forceDirect3D9Ex && (Pool == D3DPOOL_MANAGED) ) {
+        // replace D3DPOOL_MANAGED with D3DPOOL_DEFAULT
         Pool = D3DPOOL_DEFAULT;
+        // set D3DUSAGE_DYNAMIC so that texture can be locked:
+        // without this, the unity log has messages saying that cubemaps cannot be locked
+        Usage |= D3DUSAGE_DYNAMIC;
+    }
 
     return m_device->CreateCubeTexture(
         EdgeLength,
