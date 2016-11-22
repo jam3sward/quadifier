@@ -87,7 +87,7 @@ struct Data {
     PFNGetLastError         GetLastError;
     void                   *threadExitFunc;         ///< Thread exit function
     char                    pathName[_MAX_PATH];    ///< DLL path name
-} data;
+} g_data;
 
 #ifdef _M_X64
 // The 64-bit loader code is linked from an external assembler file,
@@ -181,7 +181,7 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
     bool result = false;
 
     // zero fill the data structure
-    memset( &data, 0, sizeof(data) );
+    memset( &g_data, 0, sizeof(g_data) );
 
     // load kernel32
     HMODULE kernel32 = LoadLibrary( "kernel32.dll" );
@@ -230,29 +230,29 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
         );
         if ( process == 0 ) break;
 
-        // obtain function pointer to LoadLibraryA and store in data
-        data.LoadLibrary = reinterpret_cast<PFNLoadLibraryA>(
+        // obtain function pointer to LoadLibraryA and store in g_data
+        g_data.LoadLibrary = reinterpret_cast<PFNLoadLibraryA>(
             GetProcAddress( kernel32, "LoadLibraryA" ) );
-        if ( data.LoadLibrary == 0 ) break;
+        if ( g_data.LoadLibrary == 0 ) break;
 
-        // obtain function pointer to GetLastError and store in data
-        data.GetLastError = reinterpret_cast<PFNGetLastError>(
+        // obtain function pointer to GetLastError and store in g_data
+        g_data.GetLastError = reinterpret_cast<PFNGetLastError>(
             GetProcAddress( kernel32, "GetLastError" ) );
-        if ( data.GetLastError == 0 ) break;
+        if ( g_data.GetLastError == 0 ) break;
 
-        // obtain function pointer to ExitThread and store in data
-        data.ExitThread = reinterpret_cast<PFNExitThread>(
+        // obtain function pointer to ExitThread and store in g_data
+        g_data.ExitThread = reinterpret_cast<PFNExitThread>(
             GetProcAddress( kernel32, "ExitThread" ) );
-        if ( data.ExitThread == 0 ) break;
+        if ( g_data.ExitThread == 0 ) break;
 
-        // obtain function pointer to RtlExitUserThread and store in data
-        data.RtlExitUserThread = reinterpret_cast<PFNRtlExitUserThread>(
+        // obtain function pointer to RtlExitUserThread and store in g_data
+        g_data.RtlExitUserThread = reinterpret_cast<PFNRtlExitUserThread>(
             GetProcAddress( ntdll, "RtlExitUserThread" ) );
-        if ( data.RtlExitUserThread == 0 ) break;
+        if ( g_data.RtlExitUserThread == 0 ) break;
 
         // copy the DLL path name into the data structure
         strncpy_s(
-            data.pathName, sizeof(data.pathName),
+            g_data.pathName, sizeof(g_data.pathName),
             fullPath, _TRUNCATE
         );
 
@@ -275,7 +275,7 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
         size_t codeSize = codeEndPtr - codeBeginPtr;
 
         // size of data
-        unsigned dataSize = sizeof(data);
+        unsigned dataSize = sizeof(g_data);
 
         // total memory required
         size_t memorySize = codeSize + dataSize;
@@ -340,7 +340,7 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
 
         } local(                    // initialisation
             process, dataAddress,
-            &data, dataSize
+            &g_data, dataSize
         );
 
         // initialise OS version info structure
@@ -358,7 +358,7 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
 
         // CreateRemoteThread
         // -install the appropriate thread exit function
-        data.threadExitFunc = data.ExitThread;
+        g_data.threadExitFunc = g_data.ExitThread;
         if ( !local.writeProcessMemory() ) break;
         // -create remote thread and execute code inside target process
         thread = CreateRemoteThread(
@@ -371,7 +371,7 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
         if ( ( thread == 0 ) && vistaUp ) {
             // NtCreateThreadEx
             // -install the appropriate thread exit function
-            data.threadExitFunc = data.RtlExitUserThread;
+            g_data.threadExitFunc = g_data.RtlExitUserThread;
             if ( !local.writeProcessMemory() ) break;
             // -create remote thread and execute code inside target process
             thread = SimpleNtCreateThreadEx(
@@ -384,7 +384,7 @@ bool hive::injectDLL( DWORD processId, const std::string & pathName )
         if ( ( thread == 0 ) && vistaUp ) {
             // RtlCreateUserThread
             // -install the appropriate thread exit function
-            data.threadExitFunc = data.RtlExitUserThread;
+            g_data.threadExitFunc = g_data.RtlExitUserThread;
             if ( !local.writeProcessMemory() ) break;
 
             // -create remote thread and execute code inside target process,
