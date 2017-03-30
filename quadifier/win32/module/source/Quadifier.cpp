@@ -605,6 +605,15 @@ void Quadifier::onResize( UINT /*type*/, int w, int h )
 
 void Quadifier::onStereoSignal()
 {
+    // is this the main display render target?
+    if (!isPresentedRenderTarget()) {
+        // no, we were called from some other render target: log a warning
+        if (Log::verbose()) {
+            Log::print( "onStereoSignal called on unexpected render target\n" );
+        }
+        return;
+    }
+
     if (Log::verbose()) Log::print( "stereo signal\n" );
 
     // enable stereo mode and print a message to the log
