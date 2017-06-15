@@ -1181,11 +1181,45 @@ void Quadifier::createResources()
     } else
         Log::print( "error: failed to get depth stencil surface\n" );
 
+    // get the device creation parameters, so we can obtain the device adapter
+    // ordinal (instead of just assuming D3DADAPTER_DEFAULT)
+    D3DDEVICE_CREATION_PARAMETERS creationParameters{};
+    if ( m_device->GetCreationParameters(&creationParameters) != D3D_OK ) {
+        Log::print("error: failed to GetCreationParameters\n");
+        // fall back to default in case of problems
+        creationParameters.AdapterOrdinal = D3DADAPTER_DEFAULT;
+    }
+
+    // we will initialise this after testing the adapter identifier below
+    bool detectedNVIDIA = false;
+
+    // get the adapter identifier, using the device adapter ordinal, which we
+    // can then use to access the card vendor ID
+    D3DADAPTER_IDENTIFIER9 adapterIdentifier{};
+    if ( m_direct3D->GetAdapterIdentifier(
+        creationParameters.AdapterOrdinal,
+        0,
+        &adapterIdentifier
+    ) == D3D_OK ) {
+        // if the VendorId is 10DE this must be an NVIDIA card
+        detectedNVIDIA = (adapterIdentifier.VendorId == 0x10DE);
+    }
+
     // create render target(s)
-    for (unsigned i=0; i < m_target.size(); ++i) {
+    for (unsigned i = 0; i < m_target.size(); ++i) {
         // initialise share handle to NULL
         // JDW added for ATI compatibility
         m_target[i].shareHandle = NULL;
+
+        // this is only needed for AMD/ATI and needs to be NULL on NVIDIA
+        // otherwise it seems to fail for multisampled render targets
+        HANDLE *pSharedHandle = NULL;
+        
+        // if we haven't detected an NVIDIA card
+        if ( !detectedNVIDIA ) {
+            // assume we are on AMD/ATI and pass the shared handle pointer
+            pSharedHandle = &m_target[i].shareHandle;
+        }
 
         // create render target
         if (m_device->CreateRenderTarget(
@@ -1196,7 +1230,7 @@ void Quadifier::createResources()
             0,
             FALSE,
             &m_target[i].surface,
-            &m_target[i].shareHandle
+            pSharedHandle           // needed for AMD not for NVIDIA
         ) != S_OK) {
             Log::print("error: failed to create DX render target\n");
             break;
