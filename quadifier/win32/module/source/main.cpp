@@ -1,3 +1,4 @@
+#include <vector>
 #include <windows.h>
 #include <mhook-lib/mhook.h>
 #include <d3d9.h>
@@ -97,10 +98,9 @@ typedef HWND (WINAPI *PFNCreateWindowExW)(
     __in_opt LPVOID lpParam
 );
 
-//----------------------------------------  -------------------------------------
+//-----------------------------------------------------------------------------
 
-PFNGetProcAddress real_GetProcAddress = reinterpret_cast<PFNGetProcAddress>(
-    GetProcAddress( GetModuleHandle(L"kernel32"), "GetProcAddress" ) );
+PFNGetProcAddress real_GetProcAddress = nullptr;
 
 PFNDirect3DCreate9 real_Direct3DCreate9 = reinterpret_cast<PFNDirect3DCreate9>(
     GetProcAddress( GetModuleHandle(L"d3d9"), "Direct3DCreate9" ) );
@@ -551,11 +551,37 @@ void processAttach()
     )
         MessageBox( 0, L"Failed to hook CreateWindowExW", L"Error", MB_OK );
 
-    // hook GetProcAddress so that we can return our fake Direct3DCreate9
-    if ( (real_GetProcAddress == 0) ||
-         !Mhook_SetHook( reinterpret_cast<PVOID*>(&real_GetProcAddress),
-            fake_GetProcAddress )
-    )
+    // places to look for GetProcAddress (implementation moved from kernel32
+    // to kernelbase on Windows 10)
+    std::vector<HMODULE> moduleHandles{
+        GetModuleHandle(L"kernel32"),
+        GetModuleHandle(L"kernelbase")
+    };
+
+    // look for GetProcAddress
+    for (auto & module : moduleHandles) {
+        // get the procedure address
+        real_GetProcAddress = reinterpret_cast<PFNGetProcAddress>(
+            GetProcAddress(module, "GetProcAddress")
+        );
+
+        // if that failed, try the next module
+        if (real_GetProcAddress == nullptr) continue;
+
+        // hook GetProcAddress so that we can return our fake Direct3DCreate9
+        if (Mhook_SetHook(
+            reinterpret_cast<PVOID*>(&real_GetProcAddress), fake_GetProcAddress)
+        ) {
+            // we hooked it successfully: exit the loop
+            break;
+        } else {
+            // failed: clear pointer and try the next module
+            real_GetProcAddress = nullptr;
+        }
+    }
+
+    // we failed to hook GetProcAddress (a catastrophic error)
+    if (real_GetProcAddress == nullptr)
         MessageBox( 0, L"Failed to hook GetProcAddress", L"Error", MB_OK );
 }
 
